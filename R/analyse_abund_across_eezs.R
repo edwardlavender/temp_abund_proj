@@ -492,8 +492,6 @@ dev.off()
 
 
 #### SBT [copied from above, replacing 'sst' for 'sbt']
-
-#### SST
 ## Set up plot 
 tiff("./fig/proj_abund_by_eez_mean_sbt.tif", 
      height = 8, width = 12, units = "in", res = 600)

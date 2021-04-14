@@ -37,7 +37,7 @@ plot_raster <- function(x,
                                     x_at = profile_x, y_at = profile_y,
                                     axes = FALSE)
   }
-  return(col_param)
+  return(invisible(col_param))
 }
 
 

@@ -33,6 +33,7 @@ source("./R/helpers.R")
 ## Coastline
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 land <- flapper::invert_poly(coastline)
+cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
 ## SST
 sst_str_mean <- raster::raster(paste0(root_sensitivity_sst, "sst_str_mean.asc"))
 sst_str_sd   <- raster::raster(paste0(root_sensitivity_sst, "sst_str_sd.asc"))
@@ -43,6 +44,23 @@ sbt_str_mean <- raster::raster(paste0(root_sensitivity_sbt, "sbt_str_mean.asc"))
 sbt_str_sd   <- raster::raster(paste0(root_sensitivity_sbt, "sbt_str_sd.asc"))
 sbt_tb_mean  <- raster::raster(paste0(root_sensitivity_sbt, "sbt_tb_mean.asc"))
 sbt_tb_sd    <- raster::raster(paste0(root_sensitivity_sbt, "sbt_tb_sd.asc"))
+
+
+##############################
+##############################
+#### Processing 
+
+#### Mask rasters to focus on coastal areas
+## SST 
+sst_str_mean <- raster::mask(sst_str_mean, cover)
+sst_str_sd   <- raster::mask(sst_str_sd, cover)
+sst_tb_mean  <- raster::mask(sst_tb_mean, cover)
+sst_tb_sd    <- raster::mask(sst_tb_sd, cover)
+## SBT 
+sbt_str_mean <- raster::mask(sbt_str_mean, cover)
+sbt_str_sd   <- raster::mask(sbt_str_sd, cover)
+sbt_tb_mean  <- raster::mask(sbt_tb_mean, cover)
+sbt_tb_sd    <- raster::mask(sbt_tb_sd, cover)
 
 
 ##############################

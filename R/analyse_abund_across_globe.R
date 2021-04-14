@@ -33,57 +33,60 @@ root_ab_delta_sbt <- "./data/abundance/change/globe/sbt/"
 source("./R/helpers.R")
 
 #### Define helper function to load files 
-load_projections <- function(source = root_ab_delta_sst, type = "sst", name = "mid_rcp45", stat = "mean"){
+load_projections <- function(source = root_ab_delta_sst, type = "sst", name = "mid_rcp45", stat = "mean", mask = NULL){
   cat(paste0("Loading '", source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc'...\n"))
-  raster::raster(paste0(source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc"))
+  r <- raster::raster(paste0(source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc"))
+  if(!is.null(mask)) r <- raster::mask(r, mask = mask)
+  return(r)
 } 
 
 #### Load files
 ## Coastline
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 land <- flapper::invert_poly(coastline)
+cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
 ## Species richness
 spp_richness <- raster::raster("./data/spatial/map_spp_richness.asc")
 ## SST (mean) 
-sst_mid_rcp45_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "mean")
-sst_late_rcp45_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "mean")
-sst_mid_rcp85_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "mean")
-sst_late_rcp85_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "mean")
+sst_mid_rcp45_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "mean", mask = cover)
+sst_late_rcp45_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "mean", mask = cover)
+sst_mid_rcp85_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "mean", mask = cover)
+sst_late_rcp85_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "mean", mask = cover)
 ## SST (SD)
-sst_mid_rcp45_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "sd")
-sst_late_rcp45_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "sd")
-sst_mid_rcp85_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "sd")
+sst_mid_rcp45_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "sd", mask = cover)
+sst_late_rcp45_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "sd", mask = cover)
+sst_mid_rcp85_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "sd", mask = cover)
 sst_late_rcp85_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "sd")
 ## SST (IQR)
-sst_mid_rcp45_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "iqr")
-sst_late_rcp45_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "iqr")
-sst_mid_rcp85_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "iqr")
-sst_late_rcp85_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "iqr")
+sst_mid_rcp45_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "iqr", mask = cover)
+sst_late_rcp45_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "iqr", mask = cover)
+sst_mid_rcp85_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "iqr", mask = cover)
+sst_late_rcp85_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "iqr", mask = cover)
 ## SST (pr)
-sst_mid_rcp45_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "pr")
-sst_late_rcp45_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "pr")
-sst_mid_rcp85_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "pr")
-sst_late_rcp85_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "pr")
+sst_mid_rcp45_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "pr", mask = cover)
+sst_late_rcp45_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "pr", mask = cover)
+sst_mid_rcp85_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "pr", mask = cover)
+sst_late_rcp85_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "pr", mask = cover)
 ## SBT (mean)
-sbt_mid_rcp45_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "mean")
-sbt_late_rcp45_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "mean")
-sbt_mid_rcp85_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "mean")
-sbt_late_rcp85_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "mean")
+sbt_mid_rcp45_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "mean", mask = cover)
+sbt_late_rcp45_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "mean", mask = cover)
+sbt_mid_rcp85_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "mean", mask = cover)
+sbt_late_rcp85_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "mean", mask = cover)
 ## SBT (SD)
-sbt_mid_rcp45_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "sd")
-sbt_late_rcp45_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "sd")
-sbt_mid_rcp85_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "sd")
-sbt_late_rcp85_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "sd")
+sbt_mid_rcp45_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "sd", mask = cover)
+sbt_late_rcp45_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "sd", mask = cover)
+sbt_mid_rcp85_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "sd", mask = cover)
+sbt_late_rcp85_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "sd", mask = cover)
 ## SBT (IQR)
-sbt_mid_rcp45_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "iqr")
-sbt_late_rcp45_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "iqr")
-sbt_mid_rcp85_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "iqr")
-sbt_late_rcp85_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "iqr")
+sbt_mid_rcp45_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "iqr", mask = cover)
+sbt_late_rcp45_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "iqr", mask = cover)
+sbt_mid_rcp85_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "iqr", mask = cover)
+sbt_late_rcp85_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "iqr", mask = cover)
 ## SBT (pr)
-sbt_mid_rcp45_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "pr")
-sbt_late_rcp45_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "pr")
-sbt_mid_rcp85_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "pr")
-sbt_late_rcp85_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "pr")
+sbt_mid_rcp45_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "pr", mask = cover)
+sbt_late_rcp45_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "pr", mask = cover)
+sbt_mid_rcp85_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "pr", mask = cover)
+sbt_late_rcp85_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "pr", mask = cover)
 
 
 ##############################
@@ -91,11 +94,12 @@ sbt_late_rcp85_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "p
 #### Helpers
 
 #### Mask projections in areas with fewer than a threshold number of species
-spp_mask <- spp_richness >= 25
-spp_mask[spp_mask == 0] <- NA
+# spp_mask <- spp_richness >= 25
+# spp_mask[spp_mask == 0] <- NA
+# ... We will use the EEZ mask instead. 
 
 #### Wrapper function to plot projections
-plot_projections <- function(x, zlim = NULL, type = 1){
+plot_projections <- function(x, zlim = NULL, type = 1, mask = NULL){
   # Define graphical param 
   line_main <- -0.9
   adj_main  <- 0.05
@@ -105,14 +109,14 @@ plot_projections <- function(x, zlim = NULL, type = 1){
   # ... SDs (which can't be negative) are better presented with a contiguous colour scheme
   if(type == 1){
     plot_x <- function(x)
-      plot_raster(x, mask = spp_mask, 
+      plot_raster(x, mask = mask, 
                   zlim = zlim, add_legend = TRUE,
                   gen_cols = prettyGraphics::pretty_cols_split_heat, 
                   scheme_cold = "YlOrRd", scheme_hot = "Greens", 
                   profile_x = c(185, 210), profile_y = c(-90, 90))
     } else if(type == 2){
       plot_x <- function(x)
-        plot_raster(x, mask = spp_mask,
+        plot_raster(x, mask = mask,
                     zlim = zlim, add_legend = TRUE,
                     gen_cols = prettyGraphics::pretty_cols_brewer, pal = viridis::viridis, 
                     scheme = "PuOr", 
