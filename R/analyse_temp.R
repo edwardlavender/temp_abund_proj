@@ -42,6 +42,8 @@ sbt_late_rcp85 <- raster::raster("./data/temperature/sbt/late_century/rcp85/rcp8
 ## Spatial data
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 land <- flapper::invert_poly(coastline)
+eez <- sf::read_sf("./data/spatial/eez", "eez_v11") 
+eez <- as(eez, "Spatial")
 
 #### Helper functions
 summarise_raster <- function(x){
@@ -55,6 +57,53 @@ summarise_raster <- function(x){
 #### Define graphical param 
 paa <-  list(side = 1:4, control_axis = list(lwd.ticks = 0, labels = FALSE, lwd = 2))
 axis_args <- list(cex.axis = 1.25)
+
+
+##############################
+##############################
+#### Processing
+
+#### Make a mask for temperature projections
+# ... We will focus on areas within EEZs
+# ... We will make a raster which defines, for each cell, whether or not it is inside an EEZ
+# ... and then use this to mask temperature projections. 
+# ... This is much quicker than trying to mask files
+# ... directly using the EEZ data. 
+# This code is run once; thereafter we simply load the computed mask. 
+run <- FALSE
+if(run){
+  cover <- sst_historical
+  cover <- data.frame(raster::rasterToPoints(cover))
+  colnames(cover) <- c("x", "y", "z")
+  cover$z <- 0
+  sp::coordinates(cover) <- c("x", "y")
+  raster::crs(cover) <- raster::crs(eez)
+  cover$eez <- sp::over(cover, eez)$SOVEREIGN1
+  head(cover)
+  cover$z <- ifelse(!is.na(cover$eez), 0, NA)
+  cover$eez <- NA
+  cover <- raster::rasterFromXYZ(cover, res = 1)
+  cover <- raster::extend(cover, raster::extent(sst_historical))
+  raster::plot(cover)
+  raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
+} else {
+  cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
+}
+
+#### Mask temperature files so that they are restricted within EEZs
+## SST 
+sst_historical <- raster::mask(sst_historical, cover)
+sst_mid_rcp45  <- raster::mask(sst_mid_rcp45, cover)
+sst_mid_rcp85  <- raster::mask(sst_mid_rcp85, cover)
+sst_late_rcp45 <- raster::mask(sst_late_rcp45, cover)
+sst_late_rcp85 <- raster::mask(sst_late_rcp85, cover)
+## SBT 
+sbt_historical <- raster::mask(sbt_historical, cover)
+sbt_mid_rcp45  <- raster::mask(sbt_mid_rcp45, cover)
+sbt_mid_rcp85  <- raster::mask(sbt_mid_rcp85, cover)
+sbt_late_rcp45 <- raster::mask(sbt_late_rcp45, cover)
+sbt_late_rcp85 <- raster::mask(sbt_late_rcp85, cover)
+
 
 ##############################
 ##############################
@@ -168,8 +217,8 @@ zlim_mid[2]  <- max(sapply(list(sst_1, sst_2), raster::cellStats, max))
 zlim_late[1] <- min(sapply(list(sst_4, sst_5), raster::cellStats, min))
 zlim_late[2] <- max(sapply(list(sst_4, sst_5), raster::cellStats, max))
 # Define split heat colour schemes 
-col_param_mid  <- pretty_cols_split_heat(zlim = zlim_mid, hot = "YlOrRd")
-col_param_late <- pretty_cols_split_heat(zlim = zlim_late, hot = "YlOrRd")
+col_param_mid  <- pretty_cols_split_heat(zlim = zlim_mid, scheme_hot = "YlOrRd")
+col_param_late <- pretty_cols_brewer(zlim = zlim_late, scheme = "YlOrRd")
 
 #### delta sst_mid_rcp45
 raster::cellStats(sst_1, range)
@@ -271,8 +320,8 @@ zlim_mid[2]  <- max(sapply(list(sbt_1, sbt_2), raster::cellStats, max))
 zlim_late[1] <- min(sapply(list(sbt_4, sbt_5), raster::cellStats, min))
 zlim_late[2] <- max(sapply(list(sbt_4, sbt_5), raster::cellStats, max))
 # Define split heat colour schemes 
-col_param_mid  <- pretty_cols_split_heat(zlim = zlim_mid, hot = "YlOrRd")
-col_param_late <- pretty_cols_split_heat(zlim = zlim_late, hot = "YlOrRd")
+col_param_mid  <- pretty_cols_split_heat(zlim = zlim_mid, scheme_hot = "YlOrRd")
+col_param_late <- pretty_cols_split_heat(zlim = zlim_late, scheme_hot = "YlOrRd")
 
 #### delta sbt_mid_rcp45
 raster::cellStats(sbt_1, range)
