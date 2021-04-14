@@ -24,6 +24,8 @@ library(prettyGraphics)
 #### Load data
 spptraits <- readRDS("./data/spptraits.rds")
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
+eez <- sf::read_sf("./data/spatial/eez", "eez_boundaries_v11") 
+eez <- as(eez, "Spatial")
 
 
 ##############################
@@ -99,37 +101,53 @@ dev.off()
 ##############################
 #### Species richness
 
-#### Method used to map species richness
-# 1) Load rasters for all species into R
-# ... This is the slow step, so we will do this in parallel
-# ... We don't have to do this beforehand (e.g., if insufficient memory), but it is faster
-# 2) Define a blank map, and update this by adding predictions for each species
-# ... We could stack the raster, and then sum, but this is probably slower. 
-
-#### Load rasters into a list 
-# ... [This takes < 10 seconds on 8 cores]
-cl <- parallel::makeCluster(8L)
-spptraits$index <- 1:nrow(spptraits)
-maps_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
-  raster::raster(paste0("./data/sdm_aquamaps/", d$number.asc.file))
-})
-parallel::stopCluster(cl)
-
-#### Define blank map
-spp_map <- raster::raster(paste0("./data/sdm_aquamaps/", spptraits$number.asc.file[1]))
-spp_map <- raster::setValues(spp_map, 0)
-raster::plot(spp_map)
-
-#### Update map sequentially, by species
-# [~ Time difference of 13 minutes]
-t1 <- Sys.time()
-for(i in 1:length(maps_by_spp)){
-  svMisc::progress(i, length(maps_by_spp))
-  spp_map <- sum(spp_map, maps_by_spp[[i]])
+#### Define a raster of species richness for modelled species over the globe
+# This code only needs to be run once;
+# Thereafter, we simply load in the file. 
+run <- FALSE
+if(run){
+  
+  #### Method used to map species richness
+  # 1) Load rasters for all species into R
+  # ... This is the slow step, so we will do this in parallel
+  # ... We don't have to do this beforehand (e.g., if insufficient memory), but it is faster
+  # 2) Define a blank map, and update this by adding predictions for each species
+  # ... We could stack the raster, and then sum, but this is probably slower. 
+  
+  #### Load rasters into a list 
+  # ... [This takes < 10 seconds on 8 cores]
+  cl <- parallel::makeCluster(8L)
+  spptraits$index <- 1:nrow(spptraits)
+  maps_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
+    raster::raster(paste0("./data/sdm_aquamaps/", d$number.asc.file))
+  })
+  parallel::stopCluster(cl)
+  
+  #### Define blank map
+  spp_map <- raster::raster(paste0("./data/sdm_aquamaps/", spptraits$number.asc.file[1]))
+  spp_map <- raster::setValues(spp_map, 0)
+  raster::plot(spp_map)
+  
+  #### Update map sequentially, by species
+  # [~ Time difference of 13 minutes]
+  t1 <- Sys.time()
+  for(i in 1:length(maps_by_spp)){
+    svMisc::progress(i, length(maps_by_spp))
+    spp_map <- sum(spp_map, maps_by_spp[[i]])
+  }
+  t2 <- Sys.time()
+  difftime(t2, t1)
+  
+  #### Save 
+  raster::writeRaster(spp_map, "./data/spatial/map_spp_richness.asc")
+  
+} else{
+  
+  #### Load file
+  spp_map <- raster::raster("./data/spatial/map_spp_richness.asc")
+  
 }
-t2 <- Sys.time()
-difftime(t2, t1)
-# raster::writeRaster(spp_map, "./data/spatial/map_spp_richness.asc")
+
 
 #### Plot map
 # Set up figure
@@ -146,7 +164,8 @@ raster::plot(spp_map,
              xlim = c(-180, 180), ylim = c(-90, 90), zlim = c(0, 1400), 
              axis.args = list(cex.axis = cex_axis))
 land <- flapper::invert_poly(coastline)
-raster::plot(sea, col = "white", add = TRUE)
+raster::plot(land, col = "white", add = TRUE)
+# raster::lines(eez, col = "dimgrey", lwd = 0.75)
 # Add axes 
 xat <- seq(-180, 180, by = 60)
 yat <- seq(-90, 90, by = 30)
