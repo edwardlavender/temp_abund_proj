@@ -19,6 +19,7 @@ rm(list = ls())
 
 #### Essential packages
 library(magrittr)
+library(prettyGraphics)
 
 #### Load data
 spptraits <- readRDS("./data/spptraits.rds")
@@ -272,7 +273,7 @@ pretty_plot(spptraits$sbt_str, spptraits$sst_str,
             xlim = xlim, ylim = ylim,
             col = scales::alpha("black", 0.75), cex = 0.8)
 lines(xlim, ylim)
-mtext(side = 3, "C [STR]", adj = 0, font = 2, cex = 1.25)
+mtext(side = 3, "D [STR]", adj = 0, font = 2, cex = 1.25)
 
 #### Save figure 
 mtext(side = 1, expression(paste("SBT (", degree, "C)")), line = 1.5, cex = 1.5, outer = TRUE)
