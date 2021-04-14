@@ -137,9 +137,7 @@ in the online version of this repository.
       - Standard deviation (SD) in thermal niche width (STR) over space;
       - Mean thermal bias (species thermal index (STI) - baseline
         temperatures) over space;
-      - SD thermal bias (STI - baseline) over space;  
-        <br />
-7.  `process_projections.R` processes relative abundance projections.
+      - SD thermal bias (STI - baseline) over space;
 
 ### Projections via `project_*()`
 
