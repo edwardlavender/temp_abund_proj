@@ -28,6 +28,33 @@ eez <- as(eez, "Spatial")
 
 ##############################
 ##############################
+#### Define a mask over EEZs 
+
+#### Make a mask for temperature projections
+# ... We will focus on areas within EEZs
+# ... We will make a raster which defines, for each cell, whether or not it is inside an EEZ
+# ... and then use this to mask temperature/abundance projections to focus on coastal areas. 
+# ... This is much quicker than trying to mask files
+# ... directly using the EEZ data. 
+
+cover <- sst_historical
+cover <- data.frame(raster::rasterToPoints(cover))
+colnames(cover) <- c("x", "y", "z")
+cover$z <- 0
+sp::coordinates(cover) <- c("x", "y")
+raster::crs(cover) <- raster::crs(eez)
+cover$eez <- sp::over(cover, eez)$SOVEREIGN1
+head(cover)
+cover$z <- ifelse(!is.na(cover$eez), 0, NA)
+cover$eez <- NA
+cover <- raster::rasterFromXYZ(cover, res = 1)
+cover <- raster::extend(cover, raster::extent(sst_historical))
+raster::plot(cover)
+raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
+
+
+##############################
+##############################
 #### Obtain EEZ in each raster cell 
 
 #### Convert raster to SpatialPointsDataFrame 

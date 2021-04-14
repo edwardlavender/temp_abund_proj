@@ -42,8 +42,7 @@ sbt_late_rcp85 <- raster::raster("./data/temperature/sbt/late_century/rcp85/rcp8
 ## Spatial data
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 land <- flapper::invert_poly(coastline)
-eez <- sf::read_sf("./data/spatial/eez", "eez_v11") 
-eez <- as(eez, "Spatial")
+cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
 
 #### Helper functions
 summarise_raster <- function(x){
@@ -62,33 +61,6 @@ axis_args <- list(cex.axis = 1.25)
 ##############################
 ##############################
 #### Processing
-
-#### Make a mask for temperature projections
-# ... We will focus on areas within EEZs
-# ... We will make a raster which defines, for each cell, whether or not it is inside an EEZ
-# ... and then use this to mask temperature projections. 
-# ... This is much quicker than trying to mask files
-# ... directly using the EEZ data. 
-# This code is run once; thereafter we simply load the computed mask. 
-run <- FALSE
-if(run){
-  cover <- sst_historical
-  cover <- data.frame(raster::rasterToPoints(cover))
-  colnames(cover) <- c("x", "y", "z")
-  cover$z <- 0
-  sp::coordinates(cover) <- c("x", "y")
-  raster::crs(cover) <- raster::crs(eez)
-  cover$eez <- sp::over(cover, eez)$SOVEREIGN1
-  head(cover)
-  cover$z <- ifelse(!is.na(cover$eez), 0, NA)
-  cover$eez <- NA
-  cover <- raster::rasterFromXYZ(cover, res = 1)
-  cover <- raster::extend(cover, raster::extent(sst_historical))
-  raster::plot(cover)
-  raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
-} else {
-  cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
-}
 
 #### Mask temperature files so that they are restricted within EEZs
 ## SST 
