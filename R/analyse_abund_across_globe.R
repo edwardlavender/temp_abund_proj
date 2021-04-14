@@ -54,6 +54,11 @@ sst_mid_rcp45_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "sd
 sst_late_rcp45_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "sd")
 sst_mid_rcp85_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "sd")
 sst_late_rcp85_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "sd")
+## SST (IQR)
+sst_mid_rcp45_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "iqr")
+sst_late_rcp45_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "iqr")
+sst_mid_rcp85_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "iqr")
+sst_late_rcp85_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "iqr")
 ## SST (pr)
 sst_mid_rcp45_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "pr")
 sst_late_rcp45_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "pr")
@@ -69,6 +74,11 @@ sbt_mid_rcp45_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "sd
 sbt_late_rcp45_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "sd")
 sbt_mid_rcp85_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "sd")
 sbt_late_rcp85_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "sd")
+## SBT (IQR)
+sbt_mid_rcp45_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "iqr")
+sbt_late_rcp45_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "iqr")
+sbt_mid_rcp85_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "iqr")
+sbt_late_rcp85_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "iqr")
 ## SBT (pr)
 sbt_mid_rcp45_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "pr")
 sbt_late_rcp45_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "pr")
@@ -161,6 +171,14 @@ plot_projections(list(sst_mid_rcp45_sd, sst_late_rcp45_sd, sst_mid_rcp45_sd, sst
 mtext(side = 4, expression(SD(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
 dev.off()
 
+#### SST (IQR)
+tiff("./fig/proj_abund_sst_iqr.tiff", 
+     height = 5.5, width = 11.8, units = "in", res = 600)
+pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
+plot_projections(list(sst_mid_rcp45_iqr, sst_late_rcp45_iqr, sst_mid_rcp45_iqr, sst_late_rcp85_iqr), type = 2)
+mtext(side = 4, expression(IQR(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
+dev.off()
+
 #### SST (pr)
 tiff("./fig/proj_abund_sst_pr.tiff", 
      height = 5.5, width = 12, units = "in", res = 600)
@@ -183,6 +201,14 @@ tiff("./fig/proj_abund_sbt_sd.tiff",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
 plot_projections(list(sbt_mid_rcp45_sd, sbt_late_rcp45_sd, sbt_mid_rcp45_sd, sbt_late_rcp85_sd), type = "2")
 mtext(side = 4, expression(Pr(Delta ~ "IRA" < 0)), cex = 1.5, line = 3.5, outer = TRUE)
+dev.off()
+
+#### SBT (IQR)
+tiff("./fig/proj_abund_sbt_iqr.tiff", 
+     height = 5.5, width = 11.8, units = "in", res = 600)
+pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
+plot_projections(list(sbt_mid_rcp45_iqr, sbt_late_rcp45_iqr, sbt_mid_rcp45_iqr, sbt_late_rcp85_iqr), type = 2)
+mtext(side = 4, expression(IQR(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
 dev.off()
 
 #### SBT (pr)
