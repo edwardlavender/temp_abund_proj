@@ -7,6 +7,7 @@
 # 1) Processes historical and future temperature projections 
 # ... Gets CMIP5 projections from /data-raw
 # ... Rotates onto 'standard' grid and forces extent from c(-180, 180, -90, 90)
+# ... Re-samples to the resolution of species distributions, if necessary. 
 # ... Masks predictions on land, using coastline data from NE (as for SDMs)
 # ... Saves files 
 
@@ -47,6 +48,7 @@ process_rcp <- function(baseline,
                         load_file, 
                         varname = "anomaly", 
                         mask = coastline, 
+                        rs = NULL,
                         save_file, 
                         overwrite = TRUE){
   # Load file 
@@ -55,6 +57,8 @@ process_rcp <- function(baseline,
   delta <- raster::rotate(delta)
   # Force full extent 
   delta <- raster::extend(delta, raster::extent(baseline), value = NA)
+  # Resample delta (the 'baseline' should have already been resampled)
+  if(!is.null(rs)) delta <- raster::resample(delta, rs, method = "bilinear")
   # Define predictions 
   pred <- baseline + delta
   # Mask predictions
@@ -67,6 +71,9 @@ process_rcp <- function(baseline,
   return(invisible(pred))
 }
 
+#### Define layer for re-sampling 
+blank <- raster::raster(ext = raster::extent(-180, 180, -90, 90), 
+                        resolution = 0.5)
 
 ##############################
 ##############################
@@ -78,6 +85,7 @@ process_rcp <- function(baseline,
 #### HADISST 
 hadisst <- raster::raster(paste0(root_raw_sst, "historical/hadisst/SSTMean.asc"))
 hadisst <- hadisst/100
+hadisst <- raster::resample(hadisst, blank)
 hadisst <- raster::mask(hadisst, coastline)
 raster::plot(hadisst)
 raster::cellStats(hadisst, range)
@@ -88,6 +96,7 @@ historical <- raster::raster(paste0(root_raw_sst, "historical/historical.nc"),
                              varname = "histclim")
 historical <- raster::rotate(historical)
 historical <- raster::extend(historical, raster::extent(-180, 180, -90, 90), value = NA)
+historical <- raster::resample(historical, blank)
 historical <- raster::mask(historical, coastline)
 raster::plot(historical)
 raster::cellStats(historical, range)
@@ -100,12 +109,14 @@ raster::writeRaster(historical, paste0(root_pro_sst, "historical/historical.asc"
 #### RCP 4.5
 sst_mid_rcp45 <- process_rcp(baseline = historical, 
                              load_file = paste0(root_raw_sst, "mid_century/rcp45/rcp45.nc"), 
-                             save_file = paste0(root_pro_sst, "mid_century/rcp45/rcp45.asc"))
+                             save_file = paste0(root_pro_sst, "mid_century/rcp45/rcp45.asc"), 
+                             rs = blank)
 
 #### RCP 8.5
 sst_mid_rcp85 <- process_rcp(baseline = historical, 
                              load_file = paste0(root_raw_sst, "mid_century/rcp85/rcp85.nc"), 
-                             save_file = paste0(root_pro_sst, "mid_century/rcp85/rcp85.asc"))
+                             save_file = paste0(root_pro_sst, "mid_century/rcp85/rcp85.asc"), 
+                             rs = blank)
 
 
 ##############################
@@ -114,12 +125,14 @@ sst_mid_rcp85 <- process_rcp(baseline = historical,
 #### RCP 4.5
 sst_late_rcp45 <- process_rcp(baseline = historical, 
                               load_file = paste0(root_raw_sst, "late_century/rcp45/rcp45.nc"), 
-                              save_file = paste0(root_pro_sst, "late_century/rcp45/rcp45.asc"))
+                              save_file = paste0(root_pro_sst, "late_century/rcp45/rcp45.asc"), 
+                              rs = blank)
 
 #### RCP 8.5
 sst_late_rcp85 <- process_rcp(baseline = historical, 
                               load_file = paste0(root_raw_sst, "late_century/rcp85/rcp85.nc"), 
-                              save_file = paste0(root_pro_sst, "late_century/rcp85/rcp85.asc"))
+                              save_file = paste0(root_pro_sst, "late_century/rcp85/rcp85.asc"), 
+                              rs = blank)
 
 
 ##############################
@@ -134,6 +147,7 @@ historical <- raster::raster(paste0(root_raw_sbt, "historical/historical.nc"),
                              varname = "histclim")
 historical <- raster::rotate(historical)
 historical <- raster::extend(historical, raster::extent(-180, 180, -90, 90), value = NA)
+historical <- raster::resample(historical, blank)
 historical <- raster::mask(historical, coastline)
 raster::plot(historical)
 raster::cellStats(historical, range)
@@ -146,12 +160,14 @@ raster::writeRaster(historical, paste0(root_pro_sbt, "historical/historical.asc"
 #### RCP 4.5
 sbt_mid_rcp45 <- process_rcp(baseline = historical, 
                              load_file = paste0(root_raw_sbt, "mid_century/rcp45/rcp45.nc"), 
-                             save_file = paste0(root_pro_sbt, "mid_century/rcp45/rcp45.asc"))
+                             save_file = paste0(root_pro_sbt, "mid_century/rcp45/rcp45.asc"), 
+                             rs = blank)
 
 #### RCP 8.5
 sbt_mid_rcp85 <- process_rcp(baseline = historical, 
                              load_file = paste0(root_raw_sbt, "mid_century/rcp85/rcp85.nc"), 
-                             save_file = paste0(root_pro_sbt, "mid_century/rcp85/rcp85.asc"))
+                             save_file = paste0(root_pro_sbt, "mid_century/rcp85/rcp85.asc"), 
+                             rs = blank)
 
 
 ##############################
@@ -160,12 +176,14 @@ sbt_mid_rcp85 <- process_rcp(baseline = historical,
 #### RCP 4.5
 sbt_late_rcp45 <- process_rcp(baseline = historical, 
                               load_file = paste0(root_raw_sbt, "late_century/rcp45/rcp45.nc"), 
-                              save_file = paste0(root_pro_sbt, "late_century/rcp45/rcp45.asc"))
+                              save_file = paste0(root_pro_sbt, "late_century/rcp45/rcp45.asc"), 
+                              rs = blank)
 
 #### RCP 8.5
 sbt_late_rcp85 <- process_rcp(baseline = historical, 
                               load_file = paste0(root_raw_sbt, "late_century/rcp85/rcp85.nc"), 
-                              save_file = paste0(root_pro_sbt, "late_century/rcp85/rcp85.asc"))
+                              save_file = paste0(root_pro_sbt, "late_century/rcp85/rcp85.asc"), 
+                              rs = blank)
 
 
 #### End of code. 
