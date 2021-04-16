@@ -38,8 +38,8 @@ scenarios.
             [Natural
             Earth](https://www.naturalearthdata.com/downloads/110m-physical-vectors/).
       - `sdm_aquamaps` contains raw [Aquamaps](https://www.aquamaps.org)
-        species distribution model (SDM) predictions (maps) for all
-        species in `aqqsstrans.csv` (see below), obtained from M.T.B.
+        species distribution model (SDM) predictions (maps) for modelled
+        species, obtained via `get_sdm_aquamaps.R` (see below);
       - `temperature` contains sea surface temperature (SST) and sea
         bottom temperature (SBT) global scale CMIP5 ensemble average
         projections for (a) historical (1956-2005) (b) mid-century
@@ -77,6 +77,7 @@ scenarios.
         `process_abund.R`.  
         <br />
 3.  `R` contains scripts for data processing, projections and analysis.
+      - `get_*` scripts get raw data, where necessary.  
       - `process_*` scripts implement data processing.
       - `project_*` scripts implement relative abundance projections.
       - `analyse_*` scripts analyse the data and projections, including
@@ -91,6 +92,15 @@ in the online version of this repository.
 
 ## Workflow
 
+### Data acquisition via `get_*`
+
+1.  `get_sdm_aquamaps.R` gets [Aquamaps](https://www.aquamaps.org) SDMs
+    for modelled species, via the
+    [`aquamapsdata`](https://github.com/raquamaps/aquamapsdata) `R`
+    package.
+
+2.  Other raw data are acquired manually (see the links above).
+
 ### Data processing via `process_*`
 
 1.  `process_coastline.R` processes the raw coastline data:
@@ -101,20 +111,20 @@ in the online version of this repository.
       - Focuses on the subset of species with depth ranges found on
         [FishBase](http://www.fishbase.org/search.php);
       - Checks for synonyms;
-      - Focuses on coastal species;
       - Saves a temporary (reduced) list of species for which
-        [Aquamaps](https://www.aquamaps.org) SDMs are processed (see
+        [Aquamaps](https://www.aquamaps.org) SDMs are acquired and then
+        processed (see `get_sdm_aquamaps.R` and
         `process_sdm_aquamaps.R`);
       - Using processed species’ distributions:
-          - Checks data quality for any species with few predicted
-            occurrences;
+          - Checks SDMs;
           - Gets thermal niche parameters from processed temperature
             projections;
-          - For the final list of species, gets the full taxonomic
-            breakdown;  
+          - Gets the full taxonomic breakdown;  
             <br />
 3.  `process_sdm_aquamaps.R` processes
     [Aquamaps](https://www.aquamaps.org) species’ distributions:
+      - Forces an extent of {-180, 180, -90, 90} to match temperature
+        projections;  
       - Replaces 0 for predicted occurrence with NA;
       - Masks land using processed coastline;  
         <br />
@@ -122,6 +132,8 @@ in the online version of this repository.
       - Extracts SST and SBT temperature projections from raw files;
       - Forces an extent of {-180, 180, -90, 90} to match species’
         distributions;
+      - Re-samples temperatures to the same spatial resolution as
+        species’ distributions;
       - Masks land using processed coastline to match species’
         distributions;  
         <br />
