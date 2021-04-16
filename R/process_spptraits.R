@@ -6,22 +6,16 @@
 #### This code:
 # Defines a list of species, and associated thermal preferences, for modelling. 
 # ... Uses an initial list of > 17,000 species
-# ... Focuses on species with depth ranges found on fishbase and selects appropriate species
+# ... Focuses on species with depth ranges found on fishbase and selects appropriate species (based on depth)
 # ... Checks for synonyms
-# ... Focuses on coastal species 
-# ... Saves a temporary (reduced) list of species for which aquamaps SDMs are processed 
-# ... ... (see process_sdm_aquamaps)
-# ... Using processed species distributions, 
-# ... ... checks data quality for any species with few predicted occurrences 
+# ... Saves a temporary (reduced) list of species for which aquamaps SDMs are obtained
+# ... Using aquamaps distributions, 
+# ... ... Focus on species for which there are no obvious artefacts in SDMs
 # ... ... Gets thermal niche parameters 
 # ... For the final list of species, gets the full taxonomic breakdown 
 
 #### Steps preceding this code:
 # 1) Raw, starting list of species for consideration (./data-raw/aqqsstrans.csv)
-# 2) Associated species distribution model predictions 
-# ... raw data: ./data-raw/sdm_aquamaps/
-# ... processing based on intermediate species list: process_sdm_aquamaps.R
-# ... processed species distributions: ./data/sdm_aquamaps 
 # 2) Processed, historical climatology predictions (./data/temperature/)
 
 
@@ -38,24 +32,22 @@ library(magrittr)
 #### Load data
 # We start with a list of > 17,000 species for consideration 
 spptraits <- read.csv("./data-raw/aqqsstrans.csv")
+coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 
 
 ##############################
 ##############################
 #### Basic dataframe processing 
 
-#### Tidy names
-names(spptraits)[1] <- "row"
-names(spptraits)[7] <- "number.asc.file"
-spptraits$SpecCode  <- NULL
-spptraits$X.x       <- NULL
-spptraits$Genus     <- NULL
-spptraits$Species   <- NULL
-spptraits$spgen     <- NULL
-
-#### Tidy column types
-spptraits$number.asc.file <- as.character(spptraits$number.asc.file)
-spptraits$spp <- as.character(spptraits$spp)
+#### Define species names
+# spp is the full binomial name, genus and species refer to the parts of the name
+spptraits <- spptraits[, c("spp", "Genus", "Species")]
+colnames(spptraits) <- c("spp", "genus", "species")
+# Join species names via "_"
+spptraits$spp_key <- apply(spptraits[, c("genus", "species")], 1, function(x) paste0(x, collapse = "_"))
+# Define associated file names 
+spptraits$spp_key_asc <- paste0(spptraits$spp_key, ".asc")
+head(spptraits)
 
 #### Basic information 
 # 17,343 species 
@@ -72,7 +64,7 @@ fishbase <- rfishbase::species(spptraits$spp)
 str(fishbase)
 
 #### Add key fields to spptraits
-spptraits$spp_code            <- fishbase$SpecCode
+# spptraits$spp_code            <- fishbase$SpecCode
 spptraits$depth_range_shallow <- fishbase$DepthRangeShallow
 spptraits$depth_range_deep    <- fishbase$DepthRangeDeep
 spptraits$importance          <- fishbase$Importance
@@ -138,91 +130,69 @@ if(any(duplicated(spptraits$spp_accepted_name))){
 
 ##############################
 ##############################
-#### Focus on coastal species 
+#### Obtain aquamaps SDMs 
 
-#### Map all raw species distributions for manual examination
-make_maps <- FALSE
-if(make_maps){
-  spptraits$index <- 1:nrow(spptraits)
-  spptraits_by_spp <- split(spptraits, spptraits$index)
-  coastline <- rnaturalearth::ne_coastline(scale = "small")
-  cl <- parallel::makeCluster(12L)
-  parallel::clusterExport(cl, c("coastline", "spptraits_by_spp"))
-  pbapply::pblapply(1:length(spptraits_by_spp), cl = cl, function(i){
-    d <- spptraits_by_spp[[i]]
-    r <- raster::raster(paste0("./data-raw/sdm_aquamaps/", d$number.asc.file))
-    png(paste0("./fig/raw_sdm_aquamaps/", i, "_", d$spp_accepted_name, ".png"), 
-        height = 5, width = 5, units = "in", res = 300)
-    raster::plot(r, main = d$spp_accepted_name)
-    raster::lines(coastline)
-    dev.off()
-    # print(d$spp_accepted_name)
-    # readline(prompt = "Press [enter] to continue...")
-  })
-  parallel::stopCluster(cl)
-}
-
-#### Define a list of non-coastal species to be dropped
-not_coastal <- c("Acanthocybium solandri", 
-                 "Allothunnus fallai", 
-                 "Euleptorhamphus viridis", 
-                 "Phtheirichthys lineatus", 
-                 "Exocoetus monocirrhus", 
-                 "Prognichthys sealei", 
-                 "Cheilopogon atrisignis", 
-                 "Cheilopogon cyanopterus", 
-                 "Cheilopogon spilonotopterus", 
-                 "Hirundichthys albimaculatus", 
-                 "Trimma emeryi", 
-                 "Lythrypnus gilberti",
-                 "Halichoeres leucurus", 
-                 "Gnatholepis gymnocara")
-length(not_coastal)
-all(not_coastal %in% spptraits$spp)
-spptraits <- spptraits[!(spptraits$spp %in% not_coastal), ]
-
-
-##############################
-##############################
-#### Check species SDM quality 
-
-#### Define processed SDMs
-# ... For this intermediate-stage reduced list of species, we will process SDMs
+#### Define SDMs
+# ... For this intermediate-stage reduced list of species, we will obtain SDMs
 # ... because subsequent processing stages require processed SDMs
 # Save intermediate spptraits list
-# saveRDS(spptraits, "./data-raw/spptraits_for_process_sdm_aquamaps.rds")
-# Implement processing 
-# ... process_sdm_aquamaps.R
-# Now continue with processing. 
+# saveRDS(spptraits, "./data-raw/spptraits_for_get_sdm_aquamaps.rds")
+# Now get aquamaps data, via 
+# ... get_sdm_aquamaps.R
 
-#### Identify species with predicted presence in < 10 cells
-# ... as potentially very data poor for manual querying.
-# ... [This code takes ~ 3 minutes with 11 cores.]
-check_occupancy <- TRUE
-if(check_occupancy){
-  spptraits$index <- 1:nrow(spptraits)
-  cl <- parallel::makeCluster(11L)
-  parallel::clusterExport(cl, "spptraits")
-  spptraits$occupancy <- 
-    pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
-      # d <- spptraits[1, ]
-      file <- paste0("./data/sdm_aquamaps/", d$number.asc.file)
-      r <- raster::raster(file)
-      # raster::plot(r)
-      f <- raster::freq(r)
-      f <- data.frame(f)
-      n_occurrence <- f$count[which(f$value == 1)]
-      return(n_occurrence)
-    })
-  parallel::stopCluster(cl)
-  table(spptraits$occupancy < 10)
+#### Process 'raw' species distributions for this intermediate list of species
+# ... via process_sdm_aquamaps.R
+# ... For ease of visualisation, below. 
+
+#### Focus on species for which aquamaps data are available
+# The aquamapsdata package only provides data for ~20,000 species for which 
+# ... the number of 'good' cells is >= 10. 
+am_data <- readRDS("./data-raw/sdm_aquamaps/tables/am_data.rds")
+am_data$spp <- paste(am_data$Genus, am_data$Species)
+table(spptraits$spp %in% am_data$spp)
+spptraits <- spptraits[spptraits$spp %in% am_data$spp, ]
+
+#### Qualitatively examine species distributions
+# ... see maps created by process_sdm_aquamaps. 
+
+## Define a vector of species that have possible artefacts in their distributions 
+spp_to_ck <- c('Prognichthys sealei',
+               'Phtheirichthys lineatus', 
+               'Parexocoetus mento',
+               'Monodactylus argenteus',
+               'Hirundichthys albimaculatus',
+               'Exocoetus monocirrhus',
+               'Euleptorhamphus viridis',
+               'Cypselurus naresii',
+               'Cololabis adocetus',
+               'Cheilopogon spilonotopterus',
+               'Cheilopogon cyanopterus',
+               'Cheilopogon atrisignis',
+               'Allothunnus fallai',
+               'Acanthocybium solandri')
+
+## Manually examine these distributions again 
+check <- FALSE
+if(check){
+  lapply(spp_to_ck, function(spp){
+    spp <- "Gnatholepis gymnocara"
+    spptraits_for_spp <- spptraits[spptraits$spp == spp, ]
+    raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits_for_spp$spp_key_asc)),
+                 main = spp)
+    raster::lines(coastline)
+    readline(prompt = "Press [enter] to continue...")
+  }) %>% invisible()
 }
 
-#### Results 
-# There are < 100 species found with predicted occupancy in < 10 cells
-spptraits[spptraits$occupancy < 10, "spp"]
-# We will exclude these species 
-spptraits <- spptraits[spptraits$occupancy >= 10, ]
+## Remove these species 
+nrow(spptraits)
+spptraits <- spptraits[!(spptraits$spp %in% spp_to_ck), ]
+nrow(spptraits)
+
+#### Add 'occurcells' (the number of 'good' aquamaps cells to spptraits)
+# (Data from the aquamapsdata package are only provided for species with more than 10 good cells.)
+spptraits$occur_cells <- am_data$OccurCells[match(spptraits$spp, am_data$spp)]
+utils.add::basic_stats(spptraits$occur_cells)
 
 
 ##############################
@@ -245,29 +215,48 @@ raster::plot(sst_historical)
 raster::plot(sbt_historical)
 par(pp)
 
-#### Get niche quantiles [~4 minutes with 11 cores]
-# Define cluster 
+#### Get niche quantiles [~16 minutes with 11 cores]
+# We will extract thermal affinities based on (a) weighted quantiles across the full predicted distribution
+# and (b) un-weighted quantiles across the distribution where the probability of presence is >= 0.5.
+
+## Define cluster 
 cl <- parallel::makeCluster(11L)
 parallel::clusterExport(cl = cl, varlist = c("sst_historical", "sbt_historical"))
-# Get niche quantiles: 
-# ... a vector of six numbers for each species
-# ... sst_t10, sst_t50, sst_t90, sbt_t10, sbt_t50, sbt_t90
+
+## Get niche quantiles: 
 spptraits$index <- 1:nrow(spptraits)
 niche_quantiles <- 
   pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
+    
     ## Load data 
     # d <- spptraits[1, ]
-    r <- raster::raster(paste0("./data/sdm_aquamaps/", d$number.asc.file))
+    r <- raster::raster(paste0("./data/sdm_aquamaps/", d$spp_key_asc))
+    r_p50 <- r
+    r_p50[r_p50 < 0.5] <- NA
     # raster::plot(r)
-    ## Get temperatures across species range [when r == 1, otherwise r == NA due to pre-processing]
+    
+    ## Get temperatures across species range [r is always > 0 following pre-processing]
     sst_historical_for_spp <- raster::mask(sst_historical, r)
     sbt_historical_for_spp <- raster::mask(sbt_historical, r)
+    sst_historical_for_spp_p50 <- raster::mask(sst_historical, r_p50)
+    sbt_historical_for_spp_p50 <- raster::mask(sbt_historical, r_p50)
     # raster::plot(sst_historical_for_spp)
     # raster::plot(sbt_historical_for_spp)
-    ## Get thermal quantiles 
-    sst_quant <- as.numeric(raster::quantile(sst_historical_for_spp, c(0.1, 0.5, 0.90), na.rm = TRUE))
-    sbt_quant <- as.numeric(raster::quantile(sbt_historical_for_spp, c(0.1, 0.5, 0.90), na.rm = TRUE))
-    return(c(sst_quant, sbt_quant))
+    # raster::plot(sst_historical_for_spp_p50)
+    # raster::plot(sbt_historical_for_spp_p50)
+    
+    ## Weighted thermal quantiles
+    probs <- c(0.1, 0.5, 0.90)
+    wts <- r[]
+    sst_quant <- as.numeric(Hmisc::wtd.quantile(sst_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
+    sbt_quant <- as.numeric(Hmisc::wtd.quantile(sbt_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
+    
+    ## Un-weighted thermal quantiles based on threshold
+    sst_quant_p50 <- as.numeric(raster::quantile(sst_historical_for_spp_p50, probs, na.rm = TRUE))
+    sbt_quant_p50 <- as.numeric(raster::quantile(sbt_historical_for_spp_p50, probs, na.rm = TRUE))
+    
+    ## Return outputs 
+    return(c(sst_quant, sst_quant_p50, sbt_quant, sbt_quant_p50))
   })
 parallel::stopCluster(cl)
 niche_quantiles <- do.call(rbind, niche_quantiles)
@@ -276,75 +265,45 @@ niche_quantiles <- do.call(rbind, niche_quantiles)
 table(is.na(niche_quantiles))
 
 #### Add quantiles to spptraits
-spptraits[, c("sst_t10", "sst_t50", "sst_t90", "sbt_t10", "sbt_t50", "sbt_t90")] <- niche_quantiles
+spptraits[, c("sst_t10", "sst_t50", "sst_t90", 
+              "sst_t10_p50", "sst_t50_p50", "sst_t90_p50",
+              "sbt_t10", "sbt_t50", "sbt_t90", 
+              "sbt_t10_p50", "sbt_t50_p50", "sbt_t90_p50"
+              )] <- niche_quantiles
 
 
 ##############################
 ##############################
 #### Get taxonomic hierarchy 
 
-#### Use a loop to get taxonomic hierarchy
-# ... (to mitigate patchy internet connections)
-# ... [This takes ~ 45 minutes]
-t1_taxise <- Sys.time()
-spptraits$phylum  <- NA
-spptraits$class  <- NA
-spptraits$order  <- NA
-spptraits$family <- NA
-try_ncbi <- FALSE
-try_itis <- FALSE
-for(i in 1:nrow(spptraits)){
-  print(i)
-  hier <- taxize::classification(spptraits$spp, db = "worms")
-  hier <- hier[[1]]$name[hier[[1]]$rank %in% c("Phylum", "Class", "Order", "Family")]
-  spptraits[i, c("phylum", "class", "order", "family")] <- hier
-  if(try_ncbi){
-    spptraits[i, c("phylum", "class", "order", "family")] <- 
-      taxize::tax_name(spptraits$spp_accepted_name[i], 
-                       get = c("phylum", "class", "order", "family"), db = "ncbi", 
-                       message = FALSE)[, c("phylum", "class", "order", "family")]
-  }
-  if(try_itis){
-    if(is.na(spptraits$phylum[i])){
-      spptraits[i, c("phylum", "class", "order", "family")] <-
-        taxize::tax_name(spptraits$spp_accepted_name[i], 
-                         get = c("phylum", "class", "order", "family"), db = "itis", 
-                         message = FALSE)[, c("phylum", "class", "order", "family")]
-    }
-  }
-}
-beepr::beep(10)
-t2_taxise <- Sys.time()
-difftime(t2_taxise, t1_taxise)
-# beepr::beep(10)
+fb_taxa <- rfishbase::load_taxa()
+index <- match(spptraits$spp, fb_taxa$Species)
+spptraits$class  <- fb_taxa$Class[index]
+spptraits$order  <- fb_taxa$Order[index]
+spptraits$family <- fb_taxa$Family[index]
 
 #### Check that taxonomic levels have been successfully queried
-spptraits[is.na(spptraits$phylum), ]
-table(is.na(spptraits$phylum))
 table(is.na(spptraits$class))
 table(is.na(spptraits$order))
 table(is.na(spptraits$family))
 
-taxize::tax_name(spptraits$spp_accepted_name[i], 
-                 get = c("phylum", "class", "order", "family"), db = "itis", 
-                 message = FALSE)[, c("phylum", "class", "order", "family")]
 
+##############################
+##############################
+#### Final adjustments
 
-
-
-# Define .csv comprising species for which manual querying is necessary 
-save <- FALSE
-if(save){
-  write.csv(spptraits[is.na(spptraits$phylum), c("spp", "phylum", "class", "order", "family")], 
-            "./data-raw/spptraits_for_manual_taxonomy_to_fill.csv", row.names = FALSE, quote = FALSE)
-}
-# Load .csv with manually defined taxonomy and add to spptraits
-manual <- read.csv("./data-raw/spptraits_for_manual_taxonomy_filled.csv")
-index <- match(spptraits$spp, manual$spp)
-spptraits$phylum
-spptraits$class
-spptraits$family
-
+spptraits$index <- 1:nrow(spptraits)
+spptraits$species_epiphet <- spptraits$species
+spptraits <- spptraits[, c("index", "spp", 
+                           "occur_cells",
+                           "sst_t10", "sst_t50", "sst_t90", 
+                           "sst_t10_p50", "sst_t50_p50", "sst_t90_p50", 
+                           "sbt_t10", "sbt_t50", "sbt_t90", 
+                           "sbt_t10_p50", "sbt_t50_p50", "sbt_t90_p50",
+                           "depth_range_shallow", "depth_range_deep", "importance",
+                           "species_epiphet", "genus", "family", "order", "class", 
+                           "spp_key", "spp_key_asc")
+                       ]
 
 
 
