@@ -292,6 +292,16 @@ table(is.na(spptraits$family))
 ##############################
 #### Final adjustments
 
+#### Ensure that only SDMs for saved species are in the SDM aquamaps folder
+extra_bool <- !(list.files("./data/sdm_aquamaps/") %in% spptraits$spp_key_asc)
+if(any(extra_bool)){
+  extra_pos <- which(extra_bool)
+  extra_con <- list.files("./data/sdm_aquamaps/", full.names = TRUE)[extra_pos]
+  file.remove(extra_con)
+}
+
+
+#### Column organisation
 spptraits$index <- 1:nrow(spptraits)
 spptraits$species_epiphet <- spptraits$species
 spptraits <- spptraits[, c("index", "spp", 
