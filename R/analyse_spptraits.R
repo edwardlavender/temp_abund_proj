@@ -36,15 +36,23 @@ eez <- as(eez, "Spatial")
 nrow(spptraits)
 
 #### Check high-level taxonomic frequencies
-table(spptraits$phylum) # (all Chordata)
-table(spptraits$class)  # (all Actinopteri)
+table(spptraits$class)  
+# Actinopterygii Elasmobranchii 
+#    2271             22
 table(spptraits$order)  
 
 #### Define table 
 spp_tbl <- 
   spptraits %>%
-  dplyr::select(order, family, spp, occupancy) %>%
-  dplyr::arrange(order, family, spp)
+  dplyr::select(order, family, genus, species_epiphet, occur_cells) %>%
+  dplyr::arrange(order, family, genus, species_epiphet)
+colnames(spp_tbl) <- c("Order", "Family", "Genus", "Species", "Cells")
+# 'Cells' is the number of unique 0.5 degree cells containing valid occurrences ('occurcells' parameter)
+# Aquamaps warns against using maps with fewer than 10 'occurcells'
+
+#### Save table
+head(spp_tbl)
+# write.table(spp_tbl, "./fig/spp_tbl.txt", sep = ",", row.names = FALSE, quote = FALSE)
 
 
 ##############################
@@ -101,50 +109,42 @@ dev.off()
 ##############################
 #### Species richness
 
-#### Define a raster of species richness for modelled species over the globe
-# This code only needs to be run once;
-# Thereafter, we simply load in the file. 
+#### Define a map of species richness 
 run <- FALSE
 if(run){
   
-  #### Method used to map species richness
-  # 1) Load rasters for all species into R
-  # ... This is the slow step, so we will do this in parallel
-  # ... We don't have to do this beforehand (e.g., if insufficient memory), but it is faster
-  # 2) Define a blank map, and update this by adding predictions for each species
-  # ... We could stack the raster, and then sum, but this is probably slower. 
-  
-  #### Load rasters into a list 
-  # ... [This takes < 10 seconds on 8 cores]
+  ## Define a list of species' rasters 
+  # This takes ~ 8 s on 8 cores. 
   cl <- parallel::makeCluster(8L)
   spptraits$index <- 1:nrow(spptraits)
   maps_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
-    raster::raster(paste0("./data/sdm_aquamaps/", d$number.asc.file))
+    raster::raster(paste0("./data/sdm_aquamaps/", d$spp_key_asc))
   })
   parallel::stopCluster(cl)
   
-  #### Define blank map
-  spp_map <- raster::raster(paste0("./data/sdm_aquamaps/", spptraits$number.asc.file[1]))
-  spp_map <- raster::setValues(spp_map, 0)
+  ## Brick species' rasters
+  # This takes 16.61 hours [...]
+  t1_bk <- Sys.time()
+  spp_bk <- raster::brick(maps_by_spp)
+  raster::writeRaster(spp_bk, "./data/spatial/species/spp_bk.tif", overwrite = TRUE)
+  beepr::beep(10)
+  t2_bk <- Sys.time()
+  difftime(t2_bk, t1_bk)
+  
+  ## Calculate species richness 
+  # This takes 1 minute 
+  t1_bk_calc <- Sys.time()
+  spp_map <- raster::calc(spp_bk, sum, na.rm = TRUE)
+  t2_bk_calc <- Sys.time()
+  difftime(t2_bk_calc, t1_bk_calc)
+  spp_map[is.na(spp_map)] <- NA
   raster::plot(spp_map)
+  raster::writeRaster(spp_map, "./data/spatial/species/map_spp_richness.asc", overwrite = TRUE)
   
-  #### Update map sequentially, by species
-  # [~ Time difference of 13 minutes]
-  t1 <- Sys.time()
-  for(i in 1:length(maps_by_spp)){
-    svMisc::progress(i, length(maps_by_spp))
-    spp_map <- sum(spp_map, maps_by_spp[[i]])
-  }
-  t2 <- Sys.time()
-  difftime(t2, t1)
-  
-  #### Save 
-  raster::writeRaster(spp_map, "./data/spatial/map_spp_richness.asc")
-  
-} else{
-  
+} else {
+
   #### Load file
-  spp_map <- raster::raster("./data/spatial/map_spp_richness.asc")
+  spp_map <- raster::raster("./data/spatial/species/map_spp_richness.asc")
   
 }
 
@@ -158,10 +158,13 @@ cex_axis <- 1.25
 cex_lab  <- 1.5
 # Create plot 
 spp_map[spp_map == 0] <- NA
+# spp_map <- sqrt(spp_map)
+zlim <- raster::cellStats(spp_map, range)
+# col_param <- pretty_cols_brewer(zlim = zlim, scheme = "YlOrRd")
 raster::plot(spp_map, 
              axes = FALSE, box = FALSE,
-             # col = rev(viridis::viridis(100)),
-             xlim = c(-180, 180), ylim = c(-90, 90), zlim = c(0, 1400), 
+             col = viridis::plasma(100),
+             xlim = c(-180, 180), ylim = c(-90, 90), zlim = zlim, 
              axis.args = list(cex.axis = cex_axis))
 land <- flapper::invert_poly(coastline)
 raster::plot(land, col = "white", add = TRUE)
@@ -196,7 +199,6 @@ table(spptraits$importance)/table(!is.na(spptraits$importance))[2]*100
 ##############################
 #### Thermal preferences
 
-
 ##############################
 #### Basic stats
 
@@ -221,25 +223,32 @@ utils.add::basic_stats(spptraits$sst_t90 - spptraits$sbt_t90)
 utils.add::basic_stats(spptraits$sst_str - spptraits$sbt_str)
 
 #### Check species and distributions for species with min/pax param
-# sst_t10, sbt_t10 (MIN) --> ISSUE 
-spptraits[which.min(spptraits$sst_t10), ]
-spptraits[which.min(spptraits$sbt_t10), ]
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/13059.asc"))
+# sst_t10, sbt_t10 (MIN)
+pos_1 <- which.min(spptraits$sst_t10)
+pos_2 <- which.min(spptraits$sbt_t10)
+spptraits[pos_1, ]
+spptraits[pos_2, ]
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
 # sbt_t10 (MAX)
-spptraits[which.max(spptraits$sst_t10), ]
-spptraits[which.max(spptraits$sbt_t10), ]
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/61353.asc")); raster::lines(coastline)
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/55845.asc")); raster::lines(coastline)
-
-# sst_t90, sbt_t90 (MIN) --> ISSUE
-spptraits[which.min(spptraits$sst_t90), ]
-spptraits[which.min(spptraits$sbt_t10), ]
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/56311.asc")); raster::lines(coastline)
+pos_1 <- which.max(spptraits$sst_t10)
+pos_2 <- which.max(spptraits$sbt_t10)
+spptraits[pos_1, ]
+spptraits[pos_2, ]
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
+# sst_t90, sbt_t90 (MIN)
+pos_1 <- which.min(spptraits$sst_t90)
+pos_2 <- which.min(spptraits$sbt_t90)
+spptraits[pos_1, ]
+spptraits[pos_2, ]
 # sst_t90, sbt_t90 (MAX)
-spptraits[which.max(spptraits$sst_t90), ]
-spptraits[which.max(spptraits$sbt_t90), ]
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/15311.asc")); raster::lines(coastline)
-raster::plot(raster::raster("./data-raw/sdm_aquamaps/55845.asc")); raster::lines(coastline)
+pos_1 <- which.max(spptraits$sst_t90)
+pos_2 <- which.max(spptraits$sbt_t90)
+spptraits[pos_1, ]
+spptraits[pos_2, ]
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
 
 #### Correlation between SST and SBT thermal niches
 # Models
@@ -252,8 +261,31 @@ summary(mod_t50)
 summary(mod_t90)
 
 
+############################## 
+#### Plot correlations between weighted and unweighted thermal affinities
+
+#### Method
+# Thermal affinities have been derived using weighted quantiles, based on the 
+# ... probability of species' presence across their distributions. They have 
+# ... also been derived from threshold-based distributions, in which absence/presence
+# ... has been assigned based on a 0.5 probability threshold and then un-weighted
+# ... quantiles have been used to define thermal affinities across areas of species
+# ... 'presence'. Here, we check the difference between these two methods in 
+# ... the resultant thermal affinities, focusing on SST. 
+
+#### Basic stats
+utils.add::basic_stats(spptraits$sst_t10 - spptraits$sst_t10_p50)
+utils.add::basic_stats(spptraits$sst_t50 - spptraits$sst_t50_p50)
+utils.add::basic_stats(spptraits$sst_t90 - spptraits$sst_t90_p50)
+
+#### Plots 
+pretty_plot(spptraits$sst_t10, spptraits$sst_t10_p50)
+pretty_plot(spptraits$sst_t50, spptraits$sst_t10_p50)
+pretty_plot(spptraits$sst_t90, spptraits$sst_t10_p50)
+
+
 ##############################
-#### Plot correlations
+#### Plot correlations between SST and SBT thermal affinities
 
 #### Set up figure
 tiff("./fig/thermal_affinity_correlations.tiff", 
