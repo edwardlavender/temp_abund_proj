@@ -49,8 +49,10 @@ coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 # ... but these cells this is because of the low resolution of climate models 
 # Expand resolution to standard global extent
 # ... To match climate outputs. 
+# ... We could also expand the extent to the smallest possible area that includes all SDMs
+# ... ... for computational speed later, but this approach is simpler. 
 # Define threshold for indicating 'presence' e.g., Pr(presence) >= 0.5 as in Klein et al. (2013). 
-# ... Instead, we will base our analyses on the probabilities. 
+# ... This is computationally beneficial when it comes to synthesising predictions across species. 
 # Plot distribution
 # ... For visual checking. 
 # Save processed SDM map. 
@@ -71,6 +73,12 @@ pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
   r[r == 0] <- NA 
   r <- raster::mask(r, coastline, updatevalue = NA)
   r <- raster::resample(r, blank, method = "ngb")
+  # Make threshold-based map 
+  r_occ <- r
+  r_occ[r_occ >= 0.5] <- 1
+  r_occ[r_occ < 0.5] <- NA
+  # raster::plot(r)
+  # raster::plot(r_occ)
   ## Plot distribution 
   plot <- FALSE
   if(plot){
@@ -80,8 +88,9 @@ pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
     raster::lines(coastline, lwd = 0.25, col = "dimgrey")
     dev.off()
   }
-  ## Save asc file 
-  raster::writeRaster(r, paste0("data/sdm_aquamaps/", d$spp_key_asc), overwrite = TRUE)
+  ## Save asc files
+  raster::writeRaster(r, paste0("data/sdm_aquamaps/maps_pr/", d$spp_key_asc), overwrite = TRUE)
+  raster::writeRaster(r_occ, paste0("data/sdm_aquamaps/maps_occ/", d$spp_key_asc), overwrite = TRUE)
   return(invisible())
 }) %>% invisible()
 parallel::stopCluster(cl)
@@ -94,13 +103,14 @@ parallel::stopCluster(cl)
 #### Manual comparisons of 'raw' and 'processed' maps 
 # E.g. 1
 raster::plot(raster::raster(paste0("data-raw/sdm_aquamaps/maps/", spptraits$spp_key_asc[1])))
-raster::plot(raster::raster(paste0("data/sdm_aquamaps/", spptraits$spp_key_asc[1])))
+raster::plot(raster::raster(paste0("data/sdm_aquamaps/maps_pr/", spptraits$spp_key_asc[1])))
+raster::plot(raster::raster(paste0("data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[1])))
 # E.g. 2
 raster::plot(raster::raster(paste0("data-raw/sdm_aquamaps/maps/", spptraits$spp_key_asc[10])))
-raster::plot(raster::raster(paste0("data/sdm_aquamaps/", spptraits$spp_key_asc[10])))
+raster::plot(raster::raster(paste0("data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[10])))
 # E.g. 3
 raster::plot(raster::raster(paste0("data-raw/sdm_aquamaps/maps/", spptraits$spp_key_asc[1000])))
-raster::plot(raster::raster(paste0("data/sdm_aquamaps/", spptraits$spp_key_asc[1000])))
+raster::plot(raster::raster(paste0("data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[1000])))
 
 #### Compare 'local' and 'online' versions of maps for a subset of species
 # ... to check these match up perfectly. 
