@@ -62,7 +62,7 @@ eez <- as(eez, "Spatial")
 # ... This assumes that x, sdm and temperature are defined across
 # ... the same extent with the same resolution. 
 predict_abund <- function(x, sdm, temperature, sti, str_sd, scale = dnorm(sti, mean = sti, sd = str_sd)){
-  x[sdm == 1] <- dnorm(temperature[sdm == 1], mean = sti, sd = str_sd)/scale
+  x[sdm > 0 ] <- dnorm(temperature[sdm > 0], mean = sti, sd = str_sd)/scale
   return(x)
 }
 
@@ -114,10 +114,10 @@ sum_abund_in_eez <- function(abund, sovereign){
 #### Projections for each species
 
 #### Duration
-# This code takes ~ 3 hours with 8 cores. 
+# This code takes ~ 3 hours 20 mins hours with 12 cores. 
 
 #### Set up cluster 
-cl <- parallel::makeCluster(8L)
+cl <- parallel::makeCluster(12L)
 parallel::clusterEvalQ(cl, {library(magrittr)}) # (for %>% in sum_abund_in_eez())
 vl <- c("predict_abund", "assign_eez", "sum_abund_in_eez", 
         "eez",
@@ -142,23 +142,23 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   
   ## Load raster for species 
   # d <- spptraits[1000, ]
-  sdm <- raster::raster(paste0("./data/sdm_aquamaps/",  d$number.asc.file))
+  sdm <- raster::raster(paste0("./data/sdm_aquamaps/maps_occ/",  d$spp_key_asc))
   # Define blank raster
   # ... cells where the species occurs will be replaced with abundance predictions
   # ... cells were the species does not occur will remain as NA 
   blank <- sdm
   blank <- raster::setValues(blank, NA)
   
-  ## Define species thermal niche parameters 
-  sti    <- d$sst_t50
-  str_sd <- (d$sst_t90 - d$sst_t10)/(2*1.281560031) 
-  denom  <- dnorm(sti, mean = sti, sd = str_sd)
-  
   #### SST projections 
+  
+  ## Define species thermal niche parameters 
+  sst_sti    <- d$sst_t50
+  sst_str_sd <- (d$sst_t90 - d$sst_t10)/(2*1.281560031) 
+  sst_denom  <- dnorm(sst_sti, mean = sst_sti, sd = sst_str_sd)
   
   ## Predict abundance from baseline temps
   ab_sst_historical <- predict_abund(x = blank,  sdm = sdm, temperature = sst_historical, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
   # Get vector of EEZs
   sst_sovereigns <- assign_eez(ab_sst_historical, eez)
   # Abundance in EEZ
@@ -167,9 +167,9 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ## Predict abundance from mid-century scenarios
   # Predictions (maps)
   ab_sst_mid_rcp45 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_mid_rcp45, 
-                                    sti = sti, str_sd = str_sd, scale = denom)
+                                    sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
   ab_sst_mid_rcp85 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_mid_rcp85, 
-                                    sti = sti, str_sd = str_sd, scale = denom)
+                                    sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
   # Predictions (eezs)
   ab_sst_mid_rcp45_by_eez <- sum_abund_in_eez(ab_sst_mid_rcp45, sst_sovereigns)
   ab_sst_mid_rcp85_by_eez <- sum_abund_in_eez(ab_sst_mid_rcp85, sst_sovereigns)
@@ -180,9 +180,9 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ## Predict abundance from late-century scenarios
   # Predictions 
   ab_sst_late_rcp45 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_late_rcp45, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
   ab_sst_late_rcp85 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_late_rcp85, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
   # Predictions (eezs)
   ab_sst_late_rcp45_by_eez <- sum_abund_in_eez(ab_sst_late_rcp45, sst_sovereigns)
   ab_sst_late_rcp85_by_eez <- sum_abund_in_eez(ab_sst_late_rcp85, sst_sovereigns)
@@ -194,8 +194,8 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ab_sst_by_eez <- ab_sst_historical_by_eez
   colnames(ab_sst_by_eez)       <- c("eez", "ab_historical")
   ab_sst_by_eez$spp             <- d$spp
-  ab_sst_by_eez$number.asc.file <- d$number.asc.file
-  ab_sst_by_eez                 <- ab_sst_by_eez[, c("spp", "number.asc.file", "eez", "ab_historical")]
+  ab_sst_by_eez$spp_key_asc     <- d$spp_key_asc
+  ab_sst_by_eez                 <- ab_sst_by_eez[, c("spp", "spp_key_asc", "eez", "ab_historical")]
   ab_sst_by_eez$ab_mid_rcp45    <- ab_sst_mid_rcp45_by_eez$abund
   ab_sst_by_eez$ab_mid_rcp85    <- ab_sst_mid_rcp85_by_eez$abund
   ab_sst_by_eez$ab_late_rcp45   <- ab_sst_late_rcp45_by_eez$abund
@@ -203,9 +203,14 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   
   #### SBT projections 
   
+  ## Define species thermal niche parameters 
+  sbt_sti    <- d$sbt_t50
+  sbt_str_sd <- (d$sbt_t90 - d$sbt_t10)/(2*1.281560031) 
+  sbt_denom  <- dnorm(sbt_sti, mean = sbt_sti, sd = sbt_str_sd)
+  
   ## Predict abundance from baseline temps
   ab_sbt_historical <- predict_abund(x = blank,  sdm = sdm, temperature = sbt_historical, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sbt_sti, str_sd = sbt_str_sd, scale = sbt_denom)
   # Get vector of EEZs (SBT data are slightly different from SST data)
   sbt_sovereigns <- assign_eez(ab_sbt_historical, eez)
   # Abundance in each EEZ
@@ -214,9 +219,9 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ## Predict abundance from mid-century scenarios
   # Predictions 
   ab_sbt_mid_rcp45 <- predict_abund(x = blank,  sdm = sdm, temperature = sbt_mid_rcp45, 
-                                    sti = sti, str_sd = str_sd, scale = denom)
+                                    sti = sbt_sti, str_sd = sbt_str_sd, scale = sbt_denom)
   ab_sbt_mid_rcp85 <- predict_abund(x = blank,  sdm = sdm, temperature = sbt_mid_rcp85, 
-                                    sti = sti, str_sd = str_sd, scale = denom)
+                                    sti = sbt_sti, str_sd = sbt_str_sd, scale = sbt_denom)
   # Predictions (eezs)
   ab_sbt_mid_rcp45_by_eez <- sum_abund_in_eez(ab_sbt_mid_rcp45, sbt_sovereigns)
   ab_sbt_mid_rcp85_by_eez <- sum_abund_in_eez(ab_sbt_mid_rcp85, sbt_sovereigns)
@@ -227,9 +232,9 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ## Predict abundance from late-century scenarios
   # Predictions (maps)
   ab_sbt_late_rcp45 <- predict_abund(x = blank,  sdm = sdm, temperature = sbt_late_rcp45, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sbt_sti, str_sd = sbt_str_sd, scale = sbt_denom)
   ab_sbt_late_rcp85 <- predict_abund(x = blank,  sdm = sdm, temperature = sbt_late_rcp85, 
-                                     sti = sti, str_sd = str_sd, scale = denom)
+                                     sti = sbt_sti, str_sd = sbt_str_sd, scale = sbt_denom)
   # Predictions (eezs)
   ab_sbt_late_rcp45_by_eez <- sum_abund_in_eez(ab_sbt_late_rcp45, sbt_sovereigns)
   ab_sbt_late_rcp85_by_eez <- sum_abund_in_eez(ab_sbt_late_rcp85, sbt_sovereigns)
@@ -241,48 +246,45 @@ ab_in_eez_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl
   ab_sbt_by_eez <- ab_sbt_historical_by_eez
   colnames(ab_sbt_by_eez)       <- c("eez", "ab_historical")
   ab_sbt_by_eez$spp             <- d$spp
-  ab_sbt_by_eez$number.asc.file <- d$number.asc.file
-  ab_sbt_by_eez                 <- ab_sbt_by_eez[, c("spp", "number.asc.file", "eez", "ab_historical")]
+  ab_sbt_by_eez$spp_key_asc     <- d$spp_key_asc
+  ab_sbt_by_eez                 <- ab_sbt_by_eez[, c("spp", "spp_key_asc", "eez", "ab_historical")]
   ab_sbt_by_eez$ab_historical   <- ab_sbt_historical_by_eez$abund
   ab_sbt_by_eez$ab_mid_rcp45    <- ab_sbt_mid_rcp45_by_eez$abund
   ab_sbt_by_eez$ab_mid_rcp85    <- ab_sbt_mid_rcp85_by_eez$abund
   ab_sbt_by_eez$ab_late_rcp45   <- ab_sbt_late_rcp45_by_eez$abund
   ab_sbt_by_eez$ab_late_rcp85   <- ab_sbt_late_rcp85_by_eez$abund
   
-  #### Write abundance-by-EEZ dataframes to file 
-  # id <- substr(d$number.asc.file, 1, nchar(d$number.asc.file) - 4)
-  # saveRDS(ab_sst_by_eez, paste0("./data/abundance/spp_change/sst/over_eez/", id, ".rds"))
-  
   #### Write rasters to file 
-  write_rasters <- FALSE
+  write_rasters <- TRUE
   if(write_rasters){
     # SST 
     raster::writeRaster(ab_delta_sst_mid_rcp45, 
-                        paste0("./data/abundance/change/spp_specific/sst/mid_century/rcp45/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sst/mid_century/rcp45/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sst_mid_rcp85, 
-                        paste0("./data/abundance/change/spp_specific/sst/mid_century/rcp85/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sst/mid_century/rcp85/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sst_late_rcp45, 
-                        paste0("./data/abundance/change/spp_specific/sst/late_century/rcp45/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sst/late_century/rcp45/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sst_late_rcp85, 
-                        paste0("./data/abundance/change/spp_specific/sst/late_century/rcp85/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sst/late_century/rcp85/", d$spp_key_asc), 
                         overwrite = TRUE)
     # SBT 
     raster::writeRaster(ab_delta_sbt_mid_rcp45, 
-                        paste0("./data/abundance/change/spp_specific/sbt/mid_century/rcp45/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sbt/mid_century/rcp45/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sbt_mid_rcp85, 
-                        paste0("./data/abundance/change/spp_specific/sbt/mid_century/rcp85/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sbt/mid_century/rcp85/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sbt_late_rcp45, 
-                        paste0("./data/abundance/change/spp_specific/sbt/late_century/rcp45/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sbt/late_century/rcp45/", d$spp_key_asc), 
                         overwrite = TRUE)
     raster::writeRaster(ab_delta_sbt_late_rcp85, 
-                        paste0("./data/abundance/change/spp_specific/sbt/late_century/rcp85/", d$number.asc.file), 
+                        paste0("./data/abundance/change/spp_specific/sbt/late_century/rcp85/", d$spp_key_asc), 
                         overwrite = TRUE)
-  }
+  } else message("Rasters NOT written to file.")
+  
   #### Return abundance dataframes 
   out <- list(sst = ab_sst_by_eez, sbt = ab_sbt_by_eez)
   return(out)
