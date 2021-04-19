@@ -8,7 +8,7 @@
 
 #### Steps preceding this code: 
 # 1) Definition of global extent/modelling resolution 
-# ... e.g., extracted from processed temperature data from process_temp.R
+# ... e.g., extracted from processed species richness data from process_spptraits.R
 
 
 ##############################
@@ -18,9 +18,12 @@
 #### Wipe workspace
 rm(list = ls())
 
+#### Essential packages
+library(magrittr)
+
 #### Load data
-# Load SST data as a 'blank' raster that gives dimensions of area
-sst_historical <- raster::raster("./data/temperature/sst/historical/historical.asc")
+# Load spp richness for species numbers and area dimensions
+spp_richness <- raster::raster("./data/spatial/species/map_spp_richness.asc")
 # Load EEZ data 
 eez <- sf::read_sf("./data/spatial/eez", "eez_v11") 
 eez <- as(eez, "Spatial")
@@ -28,71 +31,97 @@ eez <- as(eez, "Spatial")
 
 ##############################
 ##############################
-#### Define a mask over EEZs 
+#### Implement processing 
+
+#### Obtain EEZ in each cell
+# This approach takes ~ 5 minutes. 
+# A more accurate approach would loop over each EEZ, 
+# ... b/c some cells may contain more than one EEZ. 
+# ... But this is much slower. 
+# ... The approach below is sufficient here and is consistent with the 
+# ... approach used to summarise abundance predictions across EEZs. 
+eez_in_cell <- spp_richness
+eez_in_cell <- data.frame(raster::rasterToPoints(eez_in_cell))
+colnames(eez_in_cell) <- c("x", "y", "z")
+eez_in_cell$n_cell <- 1
+sp::coordinates(eez_in_cell) <- c("x", "y")
+raster::crs(eez_in_cell) <- raster::crs(eez)
+eez_in_cell$eez <- sp::over(eez_in_cell, eez)$SOVEREIGN1
+eez_in_cell <- data.frame(eez_in_cell)
+eez_in_cell$optional <- NULL
+head(eez_in_cell)
+
+#### Calculate the number of species in each grid cell 
+# Convert species richness to dataframe 
+dat_spp_richness <- data.frame(raster::rasterToPoints(spp_richness))
+colnames(dat_spp_richness) <- c("x", "y", "n_spp")
+# Define keys for matching 
+eez_in_cell$key      <- paste0("(", eez_in_cell$x, ",", eez_in_cell$y, ")")
+dat_spp_richness$key <- paste0("(", dat_spp_richness$x, ",", dat_spp_richness$y, ")")
+# Add the number of species in each cell
+eez_in_cell$n_spp <- dat_spp_richness$n_spp[match(eez_in_cell$key, dat_spp_richness$key)]
+eez_in_cell$n_spp[is.na(eez_in_cell$n_spp)] <- 0
+range(eez_in_cell$n_spp)
+
+#### Summarise the statistics for each EEZ
+# ... The total number of cells
+# ... ... Note that b/c some cells may contain multiple EEZs, this estimate is approximate. 
+# ... The total number of cells with at least one species 
+# ... ... with a Pr(presence > 0.5). 
+# ... analyse_abund_across_eezs.R adds the total number of species in each EEZ too. 
+eez_stats <- 
+  eez_in_cell %>% 
+  dplyr::filter(!is.na(eez)) %>% 
+  dplyr::group_by(eez) %>% 
+  dplyr::summarise(n_cell_tot = sum(n_cell), 
+                   n_cell_occ = sum(n_spp > 0.5), 
+                   pc_cell_occ = n_cell_occ/n_cell_tot * 100)
+
+#### Get latitudinal midpoints for each EEZ
+# Here, for speed, we get latitudinal mid-points using byid = TRUE. 
+# This returns multiple values for each EEZ, which we then average. 
+# A more accurate approach would be to loop over each EEZ and, within that EEZ, 
+# ... use byid = TRUE, but that takes hours and this faster approach is sufficient here. 
+lat_mid <- rgeos::gCentroid(eez, byid = TRUE)
+lat_mid <- data.frame(eez = eez$SOVEREIGN1, mid_point = sp::coordinates(lat_mid)[, 2])
+lat_mid <- 
+  lat_mid %>% dplyr::group_by(eez) %>% 
+  dplyr::summarise(mid_point = mean(mid_point))
+eez_stats$lat_mid <- lat_mid$mid_point[match(eez_stats$eez, lat_mid$eez)]
+eez_stats$lat_mid_abs <- abs(eez_stats$lat_mid)
+
+#### Associate latitudinal midpoints with colours
+n_cols <- 1000
+pal <- viridis::plasma
+cols <- rev(pal(n_cols))
+breaks <- seq(0, 90, length.out = n_cols)
+eez_stats$lat_band <- cut(abs(eez_stats$lat_mid), breaks = breaks)
+eez_stats$col <- cols[unclass(eez_stats$lat_band)]
+
+#### Dataframe finalisation 
+eez_in_cell$key    <- NULL
+eez_in_cell$n_cell <- NULL
 
 #### Make a mask for temperature projections
 # ... We will focus on areas within EEZs
 # ... We will make a raster which defines, for each cell, whether or not it is inside an EEZ
 # ... and then use this to mask temperature/abundance projections to focus on coastal areas. 
 # ... This is much quicker than trying to mask files
-# ... directly using the EEZ data. 
-
-cover <- sst_historical
-cover <- data.frame(raster::rasterToPoints(cover))
-colnames(cover) <- c("x", "y", "z")
-cover$z <- 0
-sp::coordinates(cover) <- c("x", "y")
-raster::crs(cover) <- raster::crs(eez)
-cover$eez <- sp::over(cover, eez)$SOVEREIGN1
-head(cover)
+# ... directly using the EEZ data.
+cover <- eez_in_cell
 cover$z <- ifelse(!is.na(cover$eez), 0, NA)
-cover$eez <- NA
-cover <- raster::rasterFromXYZ(cover, res = 1)
-cover <- raster::extend(cover, raster::extent(sst_historical))
+cover$eez   <- NULL
+cover$n_spp <- NULL
+cover <- raster::rasterFromXYZ(cover, res = 0.5)
+cover <- raster::extend(cover, raster::extent(spp_richness))
 raster::plot(cover)
-raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
 
-
-##############################
-##############################
-#### Obtain EEZ in each raster cell 
-
-#### Convert raster to SpatialPointsDataFrame 
-globe <- sst_historical
-globe <- raster::setValues(globe, 1)
-globe <- data.frame(raster::rasterToPoints(globe))
-sp::coordinates(globe) <- c("x", "y")
-raster::crs(globe) <- raster::crs(eez)
-
-#### Get EEZ for each raster cell 
-# It is necessary to loop over each EEZ, 
-# ... rather than use sp::over() on all EEZs, 
-# ... because some 1 dg cells contain multiple EEZs. 
-# This code takes a long time to run:
-# ... To just calculate the total number of cells, this takes 3.5 minutes
-# ... But to get the mid-latitudinal coordinates of each state takes 3.5 hours 
-eez_vec <- unique(eez$SOVEREIGN1)
-eez_vec <- eez_vec[!is.na(eez_vec)]
-eez_n_cell_by_eez <- 
-  pbapply::pblapply(eez_vec, function(state){
-    # state <- "Guinea-Bissau"
-    eez_for_state <- subset(eez, SOVEREIGN1 == state)
-    state_in_cell <- sp::over(globe, eez_for_state)$SOVEREIGN1 
-    n_cell_tot <- sum(state_in_cell == state, na.rm = TRUE)
-    lat_mid <- rgeos::gCentroid(eez_for_state, byid = FALSE)
-    lat_mid <- sp::coordinates(lat_mid)[2]
-    d <- data.frame(eez = state, 
-                    lat_mid = lat_mid,
-                    n_cell_tot = n_cell_tot)
-    return(d)
-  })
-eez_n_cell <- do.call(rbind, eez_n_cell_by_eez)
-head(eez_n_cell)
-
-#### Save dataframe 
-save <- FALSE
+#### Save results
+save <- TRUE
 if(save){
-  saveRDS(eez_n_cell, "./data/spatial/eez/eez_n_cell_tot.rds")
+  saveRDS(eez_in_cell, "./data/spatial/eez/eez_in_cell.rds")
+  saveRDS(eez_stats, "./data/spatial/eez/eez_stats.rds")
+  raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
 }
 
 
