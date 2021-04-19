@@ -20,6 +20,7 @@ rm(list = ls())
 #### Essential packages
 library(magrittr)
 library(prettyGraphics)
+source("./R/helpers.R")
 
 #### Load data
 spptraits <- readRDS("./data/spptraits.rds")
@@ -109,6 +110,39 @@ dev.off()
 ##############################
 #### Species richness
 
+##############################
+#### Species richness (based on threshold maps)
+
+run <- FALSE
+if(run){
+  
+  ## Define a list of species' rasters 
+  # This takes ~ 8 s on 8 cores. 
+  cl <- parallel::makeCluster(8L)
+  spptraits$index <- 1:nrow(spptraits)
+  maps_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
+    raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", d$spp_key_asc))
+  })
+  parallel::stopCluster(cl)
+  
+  ## Calculate total number of species via calc_sum() 
+  # This takes ~ 14 minutes. 
+  spp_map <- calc_sum(maps_by_spp)
+  
+  ## Save
+  raster::writeRaster(spp_map, "./data/spatial/species/map_spp_richness.asc", overwrite = TRUE)
+  
+} else {
+  
+  ## Load 
+  spp_map <- raster::raster("./data/spatial/species/map_spp_richness.asc")
+  
+}
+
+
+##############################
+#### Species richness (based on probability)
+
 #### Define a map of species richness 
 run <- FALSE
 if(run){
@@ -118,15 +152,17 @@ if(run){
   cl <- parallel::makeCluster(8L)
   spptraits$index <- 1:nrow(spptraits)
   maps_by_spp <- pbapply::pblapply(split(spptraits, spptraits$index), cl = cl, function(d){
-    raster::raster(paste0("./data/sdm_aquamaps/", d$spp_key_asc))
+    raster::raster(paste0("./data/sdm_aquamaps/maps_pr/", d$spp_key_asc))
   })
   parallel::stopCluster(cl)
   
   ## Brick species' rasters
+  # This approach is implemented so that we can, in theory, use the species richness brick
+  # ... to weight abundance estimates. 
   # This takes 16.61 hours [...]
   t1_bk <- Sys.time()
   spp_bk <- raster::brick(maps_by_spp)
-  raster::writeRaster(spp_bk, "./data/spatial/species/spp_bk.tif", overwrite = TRUE)
+  raster::writeRaster(spp_bk, "./data/spatial/species/spp_pr_bk.tif", overwrite = TRUE)
   beepr::beep(10)
   t2_bk <- Sys.time()
   difftime(t2_bk, t1_bk)
@@ -139,15 +175,13 @@ if(run){
   difftime(t2_bk_calc, t1_bk_calc)
   spp_map[is.na(spp_map)] <- NA
   raster::plot(spp_map)
-  raster::writeRaster(spp_map, "./data/spatial/species/map_spp_richness.asc", overwrite = TRUE)
+  raster::writeRaster(spp_map, "./data/spatial/species/map_spp_richness_pr.asc", overwrite = TRUE)
   
-} else {
+} 
 
-  #### Load file
-  spp_map <- raster::raster("./data/spatial/species/map_spp_richness.asc")
-  
-}
 
+##############################
+#### Map species richness
 
 #### Plot map
 # Set up figure
@@ -192,6 +226,7 @@ dev.off()
 table(!is.na(spptraits$importance))
 # % of species with fisheries statistics 
 table(!is.na(spptraits$importance))/nrow(spptraits)*100
+# % fiszh in each 'importance' group, out of those with statistics 
 table(spptraits$importance)/table(!is.na(spptraits$importance))[2]*100
 
 
@@ -228,15 +263,15 @@ pos_1 <- which.min(spptraits$sst_t10)
 pos_2 <- which.min(spptraits$sbt_t10)
 spptraits[pos_1, ]
 spptraits[pos_2, ]
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
 # sbt_t10 (MAX)
 pos_1 <- which.max(spptraits$sst_t10)
 pos_2 <- which.max(spptraits$sbt_t10)
 spptraits[pos_1, ]
 spptraits[pos_2, ]
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
 # sst_t90, sbt_t90 (MIN)
 pos_1 <- which.min(spptraits$sst_t90)
 pos_2 <- which.min(spptraits$sbt_t90)
@@ -247,8 +282,8 @@ pos_1 <- which.max(spptraits$sst_t90)
 pos_2 <- which.max(spptraits$sbt_t90)
 spptraits[pos_1, ]
 spptraits[pos_2, ]
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
-raster::plot(raster::raster(paste0("./data/sdm_aquamaps/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_1]))); raster::lines(coastline)
+raster::plot(raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", spptraits$spp_key_asc[pos_2]))); raster::lines(coastline)
 
 #### Correlation between SST and SBT thermal niches
 # Models
@@ -274,14 +309,16 @@ summary(mod_t90)
 # ... the resultant thermal affinities, focusing on SST. 
 
 #### Basic stats
-utils.add::basic_stats(spptraits$sst_t10 - spptraits$sst_t10_p50)
-utils.add::basic_stats(spptraits$sst_t50 - spptraits$sst_t50_p50)
-utils.add::basic_stats(spptraits$sst_t90 - spptraits$sst_t90_p50)
+utils.add::basic_stats(spptraits$sst_t10 - spptraits$sst_t10_wt)
+utils.add::basic_stats(spptraits$sst_t50 - spptraits$sst_t50_wt)
+utils.add::basic_stats(spptraits$sst_t90 - spptraits$sst_t90_wt)
 
-#### Plots 
-pretty_plot(spptraits$sst_t10, spptraits$sst_t10_p50)
-pretty_plot(spptraits$sst_t50, spptraits$sst_t10_p50)
-pretty_plot(spptraits$sst_t90, spptraits$sst_t10_p50)
+#### Plots
+pp <- par(mfrow = c(2, 2))
+pretty_plot(spptraits$sst_t10, spptraits$sst_t10_wt)
+pretty_plot(spptraits$sst_t50, spptraits$sst_t10_wt)
+pretty_plot(spptraits$sst_t90, spptraits$sst_t10_wt)
+par(pp)
 
 
 ##############################
