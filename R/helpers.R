@@ -1,5 +1,49 @@
 ##############################
 ##############################
+#### calc_sum()
+
+#' Calculate the sum of a list of rasters
+#' This function calculates the sum of a list of rasters. This approach is designed for situations in which it is extremely slow to brick rasters and then sum rasters in the usual way. Instead, the function loops over each raster in the list, adding it to the previous one, to generate the summary.  
+calc_sum <- function(x, verbose = TRUE){
+  # Set up verbose
+  cat_to_console <- function(..., show = verbose) if(show) cat(paste(..., "\n"))
+  if(verbose){
+    t_onset <- Sys.time()
+    cat_to_console(paste0("calc_mean() called (@ ", t_onset, ")..."))
+  }
+  # Define starting raster 
+  r <- x[[1]]
+  lx <- length(x)
+  # Update raster 
+  for(i in 2:lx){
+    svMisc::progress(i, lx)
+    r <- sum(r, x[[i]], na.rm = TRUE)
+  }
+  # Return outputs 
+  if(verbose){
+    t_end <- Sys.time()
+    duration <- difftime(t_end, t_onset, units = "mins")
+    cat_to_console(paste0("... calc_mean() call completed (@ ", t_end, ") after ~", round(duration, digits = 2), " minutes."))
+  }
+  return(r)
+}
+
+
+##############################
+##############################
+#### load_projections()
+
+#' A helper function to load files 
+load_projections <- function(source = root_ab_delta_sst, type = "sst", name = "mid_rcp45", stat = "mean", mask = NULL){
+  cat(paste0("Loading '", source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc'...\n"))
+  r <- raster::raster(paste0(source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc"))
+  if(!is.null(mask)) r <- raster::mask(r, mask = mask)
+  return(r)
+} 
+
+
+##############################
+##############################
 #### plot_raster()
 
 #' A helper function for plotting rasters 
@@ -39,6 +83,7 @@ plot_raster <- function(x,
   }
   return(invisible(col_param))
 }
+
 
 
 #### End of code. 
