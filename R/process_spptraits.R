@@ -216,8 +216,7 @@ raster::plot(sbt_historical)
 par(pp)
 
 #### Get niche quantiles [~16 minutes with 11 cores]
-# We will extract thermal affinities based on (a) weighted quantiles across the full predicted distribution
-# and (b) un-weighted quantiles across the distribution where the probability of presence is >= 0.5.
+# We will extract thermal affinities based on (a) un-weighted quantiles across the distribution where the probability of presence is >= 0.5 and (b) weighted quantiles across the full predicted distribution. 
 
 ## Define cluster 
 cl <- parallel::makeCluster(11L)
@@ -230,10 +229,9 @@ niche_quantiles <-
     
     ## Load data 
     # d <- spptraits[1, ]
-    r <- raster::raster(paste0("./data/sdm_aquamaps/", d$spp_key_asc))
-    r_p50 <- r
-    r_p50[r_p50 < 0.5] <- NA
-    # raster::plot(r)
+    r <- raster::raster(paste0("./data/sdm_aquamaps/maps_pr/", d$spp_key_asc))
+    r_p50 <- raster::raster(paste0("./data/sdm_aquamaps/maps_occ/", d$spp_key_asc))
+    # raster::plot(r); raster::plot(r_p50)
     
     ## Get temperatures across species range [r is always > 0 following pre-processing]
     sst_historical_for_spp <- raster::mask(sst_historical, r)
@@ -245,18 +243,18 @@ niche_quantiles <-
     # raster::plot(sst_historical_for_spp_p50)
     # raster::plot(sbt_historical_for_spp_p50)
     
-    ## Weighted thermal quantiles
-    probs <- c(0.1, 0.5, 0.90)
-    wts <- r[]
-    sst_quant <- as.numeric(Hmisc::wtd.quantile(sst_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
-    sbt_quant <- as.numeric(Hmisc::wtd.quantile(sbt_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
-    
     ## Un-weighted thermal quantiles based on threshold
+    probs <- c(0.1, 0.5, 0.90)
     sst_quant_p50 <- as.numeric(raster::quantile(sst_historical_for_spp_p50, probs, na.rm = TRUE))
     sbt_quant_p50 <- as.numeric(raster::quantile(sbt_historical_for_spp_p50, probs, na.rm = TRUE))
     
+    ## Weighted thermal quantiles
+    wts <- r[]
+    sst_quant_wt <- as.numeric(Hmisc::wtd.quantile(sst_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
+    sbt_quant_wt <- as.numeric(Hmisc::wtd.quantile(sbt_historical_for_spp[], wts, probs = probs, normwt = FALSE, na.rm = TRUE))
+    
     ## Return outputs 
-    return(c(sst_quant, sst_quant_p50, sbt_quant, sbt_quant_p50))
+    return(c(sst_quant_p50, sst_quant_wt, sbt_quant_p50, sbt_quant_wt))
   })
 parallel::stopCluster(cl)
 niche_quantiles <- do.call(rbind, niche_quantiles)
@@ -265,11 +263,21 @@ niche_quantiles <- do.call(rbind, niche_quantiles)
 table(is.na(niche_quantiles))
 
 #### Add quantiles to spptraits
-spptraits[, c("sst_t10", "sst_t50", "sst_t90", 
-              "sst_t10_p50", "sst_t50_p50", "sst_t90_p50",
-              "sbt_t10", "sbt_t50", "sbt_t90", 
-              "sbt_t10_p50", "sbt_t50_p50", "sbt_t90_p50"
+spptraits[, c("sst_t10", "sst_t50", "sst_t90",
+              "sst_t10_wt", "sst_t50_wt", "sst_t90_wt", 
+              "sbt_t10", "sbt_t50", "sbt_t90",  
+              "sbt_t10_wt", "sbt_t50_wt", "sbt_t90_wt"
               )] <- niche_quantiles
+
+#### Check differences between un-weighted and weighted quantiles
+threshold <- 1 # oC 
+pos_1 <- which(abs(spptraits$sst_t10 - spptraits$sst_t10_wt) > threshold)
+pos_2 <- which(abs(spptraits$sst_t50 - spptraits$sst_t50_wt) > threshold)
+pos_3 <- which(abs(spptraits$sst_t90 - spptraits$sst_t90_wt) > threshold)
+pos_4 <- which(abs(spptraits$sbt_t10 - spptraits$sbt_t10_wt) > threshold)
+pos_5 <- which(abs(spptraits$sbt_t50 - spptraits$sbt_t50_wt) > threshold)
+pos_6 <- which(abs(spptraits$sbt_t90 - spptraits$sbt_t90_wt) > threshold)
+spptraits[unique(c(pos_1, pos_2, pos_3, pos_4, pos_5, pos_6)), ]
 
 
 ##############################
@@ -293,13 +301,14 @@ table(is.na(spptraits$family))
 #### Final adjustments
 
 #### Ensure that only SDMs for saved species are in the SDM aquamaps folder
-extra_bool <- !(list.files("./data/sdm_aquamaps/") %in% spptraits$spp_key_asc)
+extra_bool <- !(list.files("./data/sdm_aquamaps/maps_occ") %in% spptraits$spp_key_asc)
 if(any(extra_bool)){
   extra_pos <- which(extra_bool)
-  extra_con <- list.files("./data/sdm_aquamaps/", full.names = TRUE)[extra_pos]
-  file.remove(extra_con)
+  extra_con_1 <- list.files("./data/sdm_aquamaps/maps_occ/", full.names = TRUE)[extra_pos]
+  extra_con_2 <- list.files("./data/sdm_aquamaps/maps_pr/", full.names = TRUE)[extra_pos]
+  file.remove(extra_con_1)
+  file.remove(extra_con_2)
 }
-
 
 #### Column organisation
 spptraits$index <- 1:nrow(spptraits)
@@ -307,9 +316,9 @@ spptraits$species_epiphet <- spptraits$species
 spptraits <- spptraits[, c("index", "spp", 
                            "occur_cells",
                            "sst_t10", "sst_t50", "sst_t90", 
-                           "sst_t10_p50", "sst_t50_p50", "sst_t90_p50", 
+                           "sst_t10_wt", "sst_t50_wt", "sst_t90_wt", 
                            "sbt_t10", "sbt_t50", "sbt_t90", 
-                           "sbt_t10_p50", "sbt_t50_p50", "sbt_t90_p50",
+                           "sbt_t10_wt", "sbt_t50_wt", "sbt_t90_wt",
                            "depth_range_shallow", "depth_range_deep", "importance",
                            "species_epiphet", "genus", "family", "order", "class", 
                            "spp_key", "spp_key_asc")
