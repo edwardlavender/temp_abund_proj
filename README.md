@@ -146,10 +146,9 @@ in the online version of this repository.
     includes:
       - Mean thermal niche width (species thermal range: STR) over
         space;
-      - Standard deviation (SD) in thermal niche width (STR) over space;
       - Mean thermal bias (species thermal index (STI) - baseline
         temperatures) over space;
-      - SD thermal bias (STI - baseline) over space;
+      - Variability in thermal bias over space;
 
 ### Projections via `project_*()`
 
@@ -178,6 +177,9 @@ in the online version of this repository.
 
 6.  `analyse_abund_across_eezs.R` analyses relative abundance
     projections across EEZs.
+
+7.  `analyse_scenarios.R` analyses the relative severity of projections
+    under RCP 4.5 and RCP 8.5.
 
 ## Citation
 

@@ -97,9 +97,8 @@ Note that the `data-raw`, `data` and `fig` directories are not provided in the o
     
 6. `process_sensitivity.R` derives species' sensitivity indices given thermal niche parameters derived from (a) SST or (b) SBT. This includes: 
     * Mean thermal niche width (species thermal range: STR) over space;
-    * Standard deviation (SD) in thermal niche width (STR) over space;
     * Mean thermal bias (species thermal index (STI) - baseline temperatures) over space;
-    * SD thermal bias (STI - baseline) over space;  
+    * Variability in thermal bias over space;
 
 ### Projections via `project_*()`
 
@@ -123,6 +122,8 @@ Note that the `data-raw`, `data` and `fig` directories are not provided in the o
 5. `analyse_abund_across_globe.R` analyses relative abundance projections across the globe. 
 
 6. `analyse_abund_across_eezs.R` analyses relative abundance projections across EEZs. 
+
+7. `analyse_scenarios.R` analyses the relative severity of projections under RCP 4.5 and RCP 8.5. 
 
 ## Citation
 
