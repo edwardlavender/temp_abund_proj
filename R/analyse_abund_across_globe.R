@@ -32,36 +32,19 @@ root_ab_delta_sst <- "./data/abundance/change/globe/sst/"
 root_ab_delta_sbt <- "./data/abundance/change/globe/sbt/"
 source("./R/helpers.R")
 
-#### Define helper function to load files 
-load_projections <- function(source = root_ab_delta_sst, type = "sst", name = "mid_rcp45", stat = "mean", mask = NULL){
-  cat(paste0("Loading '", source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc'...\n"))
-  r <- raster::raster(paste0(source, stat, "/ab_delta_", type, "_", name, "_", stat, ".asc"))
-  if(!is.null(mask)) r <- raster::mask(r, mask = mask)
-  return(r)
-} 
-
 #### Load files
 ## Coastline
 coastline <- readRDS("./data/spatial/coastline/coastline.rds")
 land <- flapper::invert_poly(coastline)
 cover <- raster::raster("./data/spatial/eez/eez_mask.asc")
+# cover <- NULL
 ## Species richness
-spp_richness <- raster::raster("./data/spatial/map_spp_richness.asc")
+spp_richness <- raster::raster("./data/spatial/species/map_spp_richness.asc")
 ## SST (mean) 
 sst_mid_rcp45_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "mean", mask = cover)
 sst_late_rcp45_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "mean", mask = cover)
 sst_mid_rcp85_mean  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "mean", mask = cover)
 sst_late_rcp85_mean <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "mean", mask = cover)
-## SST (SD)
-sst_mid_rcp45_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "sd", mask = cover)
-sst_late_rcp45_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "sd", mask = cover)
-sst_mid_rcp85_sd  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "sd", mask = cover)
-sst_late_rcp85_sd <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "sd")
-## SST (IQR)
-sst_mid_rcp45_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "iqr", mask = cover)
-sst_late_rcp45_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "iqr", mask = cover)
-sst_mid_rcp85_iqr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp85", "iqr", mask = cover)
-sst_late_rcp85_iqr <- load_projections(root_ab_delta_sst, "sst", "late_rcp85", "iqr", mask = cover)
 ## SST (pr)
 sst_mid_rcp45_pr  <- load_projections(root_ab_delta_sst, "sst", "mid_rcp45", "pr", mask = cover)
 sst_late_rcp45_pr <- load_projections(root_ab_delta_sst, "sst", "late_rcp45", "pr", mask = cover)
@@ -72,21 +55,6 @@ sbt_mid_rcp45_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "
 sbt_late_rcp45_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "mean", mask = cover)
 sbt_mid_rcp85_mean  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "mean", mask = cover)
 sbt_late_rcp85_mean <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "mean", mask = cover)
-## SBT (SD)
-sbt_mid_rcp45_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "sd", mask = cover)
-sbt_late_rcp45_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "sd", mask = cover)
-sbt_mid_rcp85_sd  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "sd", mask = cover)
-sbt_late_rcp85_sd <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "sd", mask = cover)
-## SBT (IQR)
-sbt_mid_rcp45_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "iqr", mask = cover)
-sbt_late_rcp45_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "iqr", mask = cover)
-sbt_mid_rcp85_iqr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "iqr", mask = cover)
-sbt_late_rcp85_iqr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "iqr", mask = cover)
-## SBT (pr)
-sbt_mid_rcp45_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp45", "pr", mask = cover)
-sbt_late_rcp45_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp45", "pr", mask = cover)
-sbt_mid_rcp85_pr  <- load_projections(root_ab_delta_sbt, "sbt", "mid_rcp85", "pr", mask = cover)
-sbt_late_rcp85_pr <- load_projections(root_ab_delta_sbt, "sbt", "late_rcp85", "pr", mask = cover)
 
 
 ##############################
@@ -113,13 +81,17 @@ plot_projections <- function(x, zlim = NULL, type = 1, mask = NULL){
                   zlim = zlim, add_legend = TRUE,
                   gen_cols = prettyGraphics::pretty_cols_split_heat, 
                   scheme_cold = "YlOrRd", scheme_hot = "Greens", 
+                  select_cold = 3:8, select_hot = 4:8,
                   profile_x = c(185, 210), profile_y = c(-90, 90))
     } else if(type == 2){
       plot_x <- function(x)
         plot_raster(x, mask = mask,
                     zlim = zlim, add_legend = TRUE,
-                    gen_cols = prettyGraphics::pretty_cols_brewer, pal = viridis::viridis, 
-                    scheme = "PuOr", 
+                    # gen_cols = prettyGraphics::pretty_cols_brewer, pal = viridis::plasma, 
+                    gen_cols = prettyGraphics::pretty_cols_split_heat, 
+                    split = 0.5,
+                    scheme_cold = "Greens", scheme_hot = "YlOrRd", 
+                    select_cold = 2:8, select_hot = 2:8,
                     profile_x = c(185, 210))
     } else stop("'type' not supported.")
   # mid_rcp45_mean
@@ -164,23 +136,9 @@ tiff("./fig/proj_abund_sst_mean.tiff",
      height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_mean, sst_late_rcp45_mean, sst_mid_rcp45_mean, sst_late_rcp85_mean), zlim = c(-1, 1))
-mtext(side = 4, expression(E(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
-dev.off()
-
-#### SST (SD)
-tiff("./fig/proj_abund_sst_sd.tiff", 
-     height = 5.5, width = 11.8, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
-plot_projections(list(sst_mid_rcp45_sd, sst_late_rcp45_sd, sst_mid_rcp45_sd, sst_late_rcp85_sd), type = 2)
-mtext(side = 4, expression(SD(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
-dev.off()
-
-#### SST (IQR)
-tiff("./fig/proj_abund_sst_iqr.tiff", 
-     height = 5.5, width = 11.8, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
-plot_projections(list(sst_mid_rcp45_iqr, sst_late_rcp45_iqr, sst_mid_rcp45_iqr, sst_late_rcp85_iqr), type = 2)
-mtext(side = 4, expression(IQR(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
+mtext(side = 4, 
+      expression(paste("Mean change in IRA, ", E(Delta ~ "IRA"))), 
+      cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
 #### SST (pr)
@@ -188,7 +146,9 @@ tiff("./fig/proj_abund_sst_pr.tiff",
      height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_pr, sst_late_rcp45_pr, sst_mid_rcp45_pr, sst_late_rcp85_pr), type = 2)
-mtext(side = 4, expression(Pr(Delta ~ "IRA" < 0)), cex = 1.5, line = 3.5, outer = TRUE)
+mtext(side = 4, 
+      expression(paste("Prop. spp. with declines in IRA, ", Pr(Delta ~ "IRA" < 0))),
+      cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
 #### SBT (mean)
@@ -196,31 +156,9 @@ tiff("./fig/proj_abund_sbt_mean.tiff",
      height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sbt_mid_rcp45_mean, sbt_late_rcp45_mean, sbt_mid_rcp45_mean, sbt_late_rcp85_mean), zlim = c(-1, 1))
-mtext(side = 4, expression(E(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
-dev.off()
-
-#### SBT (SD)
-tiff("./fig/proj_abund_sbt_sd.tiff", 
-     height = 5.5, width = 12, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
-plot_projections(list(sbt_mid_rcp45_sd, sbt_late_rcp45_sd, sbt_mid_rcp45_sd, sbt_late_rcp85_sd), type = "2")
-mtext(side = 4, expression(Pr(Delta ~ "IRA" < 0)), cex = 1.5, line = 3.5, outer = TRUE)
-dev.off()
-
-#### SBT (IQR)
-tiff("./fig/proj_abund_sbt_iqr.tiff", 
-     height = 5.5, width = 11.8, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.65, 0, 2.65))
-plot_projections(list(sbt_mid_rcp45_iqr, sbt_late_rcp45_iqr, sbt_mid_rcp45_iqr, sbt_late_rcp85_iqr), type = 2)
-mtext(side = 4, expression(IQR(Delta ~ "IRA")), cex = 1.5, line = 3.5, outer = TRUE)
-dev.off()
-
-#### SBT (pr)
-tiff("./fig/proj_abund_sbt_pr.tiff", 
-     height = 5.5, width = 12, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
-plot_projections(list(sbt_mid_rcp45_pr, sbt_late_rcp45_pr, sbt_mid_rcp45_pr, sbt_late_rcp85_pr), type = 2)
-mtext(side = 4, expression(Pr(Delta ~ "IRA" < 0)), cex = 1.5, line = 3.5, outer = TRUE)
+mtext(side = 4, 
+      expression(paste("Mean change in IRA, ", E(Delta ~ "IRA"))), 
+      cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
 
