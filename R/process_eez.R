@@ -116,11 +116,39 @@ cover <- raster::rasterFromXYZ(cover, res = 0.5)
 cover <- raster::extend(cover, raster::extent(spp_richness))
 raster::plot(cover)
 
+#### Define a vector of the EEZs with the largest marine capture production (FAO, 2018)
+eez_25 <- c("Malaysia", 
+            "Indonesia", 
+            "Thailand",
+            "Philippines",
+            "India",
+            "Myanmar", 
+            "Vietnam",
+            "United Kingdom",
+            "United States",
+            "Denmark",
+            "Morocco",
+            "Spain",
+            "Russia",
+            "Iceland",
+            "Argentina",
+            "Norway",
+            "Canada",
+            "Japan",
+            "Mexico",
+            "South Korea",
+            "Chile",
+            "Ecuador",
+            "China",
+            "Taiwan",
+            "Peru")
+
 #### Save results
 save <- TRUE
 if(save){
   saveRDS(eez_in_cell, "./data/spatial/eez/eez_in_cell.rds")
   saveRDS(eez_stats, "./data/spatial/eez/eez_stats.rds")
+  saveRDS(eez_25, "./data/spatial/eez/eez_with_largest_marine_capture_production.rds")
   raster::writeRaster(cover, "./data/spatial/eez/eez_mask.asc", overwrite = TRUE)
 }
 
