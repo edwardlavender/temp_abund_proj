@@ -45,9 +45,9 @@ table(spptraits$order)
 #### Define table 
 spp_tbl <- 
   spptraits %>%
-  dplyr::select(order, family, genus, species_epiphet, occur_cells) %>%
+  dplyr::select(order, family, genus, species_epiphet, occur_cells, sst_t10, sst_t50, sst_t90) %>%
   dplyr::arrange(order, family, genus, species_epiphet)
-colnames(spp_tbl) <- c("Order", "Family", "Genus", "Species", "Cells")
+colnames(spp_tbl) <- c("Order", "Family", "Genus", "Species", "Cells", "T10", "T50", "T90")
 # 'Cells' is the number of unique 0.5 degree cells containing valid occurrences ('occurcells' parameter)
 # Aquamaps warns against using maps with fewer than 10 'occurcells'
 
@@ -60,8 +60,16 @@ head(spp_tbl)
 ##############################
 #### Depth preferences 
 
+#### Lifestyle
+fb <- rfishbase::species()
+spptraits$habit <- fb$DemersPelag[match(spptraits$spp, fb$Species)]
+table(is.na(spptraits$habit))
+table(spptraits$habit)
+
 #### Get depth quantiles 
-qs <- quantile(spptraits$depth_range_shallow,  probs = seq(0, 1, by = 0.05), na.rm = TRUE) 
+spptraits$depth_mean <- apply(spptraits[, c("depth_range_shallow", "depth_range_deep")], 1, mean)
+utils.add::basic_stats(spptraits$depth_mean, na.rm = TRUE)
+qs <- quantile(spptraits$depth_range_shallow,  probs = seq(0, 1, by = 0.05)) 
 qd <- quantile(spptraits$depth_range_deep,  probs = seq(0, 1, by = 0.05))    
 qs
 qd
@@ -228,6 +236,7 @@ table(!is.na(spptraits$importance))
 table(!is.na(spptraits$importance))/nrow(spptraits)*100
 # % fiszh in each 'importance' group, out of those with statistics 
 table(spptraits$importance)/table(!is.na(spptraits$importance))[2]*100
+23.5364397 + 1.1947431 + 39.1875747
 
 
 ##############################
@@ -309,9 +318,14 @@ summary(mod_t90)
 # ... the resultant thermal affinities, focusing on SST. 
 
 #### Basic stats
+# SST 
 utils.add::basic_stats(spptraits$sst_t10 - spptraits$sst_t10_wt)
 utils.add::basic_stats(spptraits$sst_t50 - spptraits$sst_t50_wt)
 utils.add::basic_stats(spptraits$sst_t90 - spptraits$sst_t90_wt)
+# SBT
+utils.add::basic_stats(spptraits$sbt_t10 - spptraits$sbt_t10_wt)
+utils.add::basic_stats(spptraits$sbt_t50 - spptraits$sbt_t50_wt)
+utils.add::basic_stats(spptraits$sbt_t90 - spptraits$sbt_t90_wt)
 
 #### Plots
 pp <- par(mfrow = c(2, 2))
