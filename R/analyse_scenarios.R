@@ -80,6 +80,7 @@ par(pp)
 # ... Increases in abundance are greater in temperate regions 
 # The absolute differences between the scenarios are small:
 utils.add::basic_stats(abs(sst_mid_delta[]), na.rm = TRUE)
+quantile(abs(sst_mid_delta[]), probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
 
 #### Across EEZs 
 ab_sst_summary_avg <- 
