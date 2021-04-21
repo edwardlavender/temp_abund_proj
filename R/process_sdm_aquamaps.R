@@ -252,6 +252,7 @@ map_sdm <- function(r, coastline, xy_gbif, xy_obis,...){
 }
 
 #### Make maps 
+# This takes ~ 6 hours because cropping the spatial data and plotting the high res rasters is slow. 
 t1_maps <- Sys.time()
 cl <- parallel::makeCluster(8L)
 parallel::clusterExport(cl, varlist = c("occurence_xy", "map_sdm"))
