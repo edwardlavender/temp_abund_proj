@@ -67,9 +67,10 @@ table(is.na(spptraits$habit))
 table(spptraits$habit)
 
 #### Get depth quantiles 
+table(!is.na(spptraits$depth_range_shallow))
 spptraits$depth_mean <- apply(spptraits[, c("depth_range_shallow", "depth_range_deep")], 1, mean)
 utils.add::basic_stats(spptraits$depth_mean, na.rm = TRUE)
-qs <- quantile(spptraits$depth_range_shallow,  probs = seq(0, 1, by = 0.05)) 
+qs <- quantile(spptraits$depth_range_shallow,  probs = seq(0, 1, by = 0.05), na.rm = TRUE) 
 qd <- quantile(spptraits$depth_range_deep,  probs = seq(0, 1, by = 0.05))    
 qs
 qd
