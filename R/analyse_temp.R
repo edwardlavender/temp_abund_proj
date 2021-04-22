@@ -134,6 +134,7 @@ sst_8 <- (sst_late_rcp85 - sst_historical) - (sst_mid_rcp85 - sst_historical)
 sst_n <- raster::stack(sst_1, sst_2, sst_3, sst_4, sst_5, sst_6, sst_7, sst_8)
 
 #### Summary statistics
+## All 
 summarise_raster(sst_historical)
 summarise_raster(sst_1)
 summarise_raster(sst_2)
@@ -143,6 +144,12 @@ summarise_raster(sst_5)
 summarise_raster(sst_6)
 summarise_raster(sst_7)
 summarise_raster(sst_8)
+## RCP 4.5 mid and late 
+summarise_raster(sst_1)
+summarise_raster(sst_4)
+## RCP 8.5 mid and late 
+summarise_raster(sst_2)
+summarise_raster(sst_5)
 
 #### Quick visualisation 
 raster::plot(sst_1)
@@ -257,6 +264,7 @@ sbt_8 <- (sbt_late_rcp85 - sbt_historical) - (sbt_mid_rcp85 - sbt_historical)
 sbt_n <- raster::stack(sbt_1, sbt_2, sbt_3, sbt_4, sbt_5, sbt_6, sbt_7, sbt_8)
 
 #### Raster summarise
+## All 
 summarise_raster(sbt_historical)
 summarise_raster(sbt_1)
 summarise_raster(sbt_2)
@@ -266,6 +274,12 @@ summarise_raster(sbt_5)
 summarise_raster(sbt_6)
 summarise_raster(sbt_7)
 summarise_raster(sbt_8)
+## RCP 4.5 mid and late 
+summarise_raster(sbt_1)
+summarise_raster(sbt_4)
+## RCP 8.5 mid and late 
+summarise_raster(sbt_2)
+summarise_raster(sbt_5)
 
 #### Quick visualisation
 raster::plot(sbt_1)

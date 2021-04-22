@@ -146,9 +146,9 @@ pretty_plot(ab_sst_summary_avg$avg_late_rcp45, ab_sst_summary_avg$avg_late_rcp85
             cex = ab_sst_summary_avg$n_spp/750)
 
 # Add helper lines
-lines(xlim, ylim, lwd = 2, lty = 2)
-lines(c(0, 0), ylim, lwd = 2, lty = 3)
-lines(xlim, c(0, 0), lwd = 2, lty = 3)
+lines(xlim, ylim, lwd = 0.75, lty = 2)
+lines(c(0, 0), ylim, lwd = 0.75, lty = 3)
+lines(xlim, c(0, 0), lwd = 0.75, lty = 3)
 
 ## Add linear model 
 # Fit linear model using weighted regression
@@ -162,7 +162,8 @@ x <- seq(quantile(ab_sst_summary_avg$avg_late_rcp45, 0.025),
          length.out = 100)
 preds <- predict(m1, newdata = data.frame(avg_late_rcp45 = x), type = "response", se.fit = TRUE)
 preds <- list_CIs(preds)
-add_error_envelope(x, preds)
+add_error_envelope(x, preds, 
+                   add_fit = list(lwd = 0.75))
 
 ## Add titles
 mtext(side = 1, expression(paste(E(Delta ~ IRA[EEZ]), " in RCP 4.5 [L]")), line = 2.5, cex = 1.25)
@@ -206,7 +207,7 @@ legend(0.01, ylim[2] * 1.075,
        cex = 1)
 
 ## Add titles
-mtext(side = 1, expression(Pr(Delta ~ IRA[EEZ] < 0)), line = 2, cex = 1.25)
+mtext(side = 1, expression(Pr(Delta ~ IRA[EEZ] < 0)), line = 2.5, cex = 1.25)
 mtext(side = 2, "Density", cex = 1.25, line = 2.5)
 mtext(side = 3, font = 2, "B", cex = 1.25, adj = 0, line = 0.5)
 

@@ -137,7 +137,7 @@ tiff("./fig/proj_abund_sst_mean.tiff",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_mean, sst_late_rcp45_mean, sst_mid_rcp45_mean, sst_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in IRA, ", E(Delta ~ "IRA"))), 
+      expression(paste("Mean change in IRA, ", E(Delta ~ IRA["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -147,7 +147,7 @@ tiff("./fig/proj_abund_sst_pr.tiff",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_pr, sst_late_rcp45_pr, sst_mid_rcp45_pr, sst_late_rcp85_pr), type = 2)
 mtext(side = 4, 
-      expression(paste("Prop. spp. with declines in IRA, ", Pr(Delta ~ "IRA" < 0))),
+      expression(paste("Prop. spp. with declines in IRA, ", Pr(Delta ~ IRA["i,j"] < 0))),
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -157,7 +157,7 @@ tiff("./fig/proj_abund_sbt_mean.tiff",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sbt_mid_rcp45_mean, sbt_late_rcp45_mean, sbt_mid_rcp45_mean, sbt_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in IRA, ", E(Delta ~ "IRA"))), 
+      expression(paste("Mean change in IRA, ", E(Delta ~ IRA["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 

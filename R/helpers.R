@@ -53,6 +53,7 @@ plot_raster <- function(x,
                         gen_cols = prettyGraphics::pretty_cols_brewer,
                         profile_x = c(181, 220), profile_y = c(-90, 90),
                         add_legend = TRUE,
+                        legend_paa = list(),
                         sp = NULL,...){
   
   paa <-  list(side = 1:4, control_axis = list(lwd.ticks = 0, labels = FALSE, lwd = 2))
@@ -66,14 +67,14 @@ plot_raster <- function(x,
                                pretty_axis_args = paa,
                                add_rasters = list(x = x, smallplot = sp, axis.args = axis_args, 
                                                   zlim = zlim, breaks = col_param$breaks, col = col_param$col, 
-                                                  pretty_axis_args = list()), 
+                                                  pretty_axis_args = legend_paa), 
                                add_polys = list(x = land))
   } else {
     prettyGraphics::pretty_map(x, 
                                pretty_axis_args = paa,
                                add_rasters = list(x = x, plot_method = raster::image, legend = FALSE,
                                                   zlim = zlim, breaks = col_param$breaks, col = col_param$col, 
-                                                  pretty_axis_args = list()), 
+                                                  pretty_axis_args = legend_paa), 
                                add_polys = list(x = land))
   }
   add_profile <- TRUE

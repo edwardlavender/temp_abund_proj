@@ -86,19 +86,30 @@ cex_main  <- 1.5
 #### Set up plot to save 
 tiff("./fig/sensitivity.tiff", 
      height = 5.5, width = 12, units = "in", res = 600)
-pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
+pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.45, 0, 2.45))
 sp <- c(0.99, 1, 0.2, 0.8)
 
+#### Get sensible z limits to faciliate comparisons
+# STR
+zlim_str <- range(c(raster::cellStats(sst_str_mean, range), 
+                    raster::cellStats(sbt_str_mean, range)))
+zlim_str
+# TB
+zlim_tb <- range(c(raster::cellStats(sst_tb_mean, range), 
+                   raster::cellStats(sbt_tb_mean, range)))
+zlim_tb
+
 #### sst_str_mean
-plot_raster(sst_str_mean, select = 2:8, rev = TRUE, sp = sp)
+plot_raster(sst_str_mean, zlim = zlim_str, select = 2:8, rev = TRUE, sp = sp)
 mtext(side = 3, "A (mean SST STR)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### sbt_str_mean
-plot_raster(sbt_str_mean, select = 2:8, rev = TRUE, sp = sp)
+plot_raster(sbt_str_mean, zlim = zlim_str, select = 2:8, rev = TRUE, sp = sp)
 mtext(side = 3, "B (mean SBT STR)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### sst_tb_mean
 plot_raster(sst_tb_mean, 
+            zlim = zlim_tb,
             gen_cols = pretty_cols_split_heat,
             scheme_hot = "Blues",  scheme_cold = "YlOrRd", 
             select_hot = 4:8, select_cold = 4:8,
@@ -107,6 +118,7 @@ mtext(side = 3, "C (mean STI - SST)", adj = adj_main, line = line_main, cex = ce
 
 #### sbt_tb_mean
 plot_raster(sbt_tb_mean, 
+            zlim = zlim_tb,
             gen_cols = pretty_cols_split_heat,
             scheme_hot = "Blues", scheme_cold = "YlOrRd", 
             select_hot = 4:8, select_cold = 4:8,
@@ -129,18 +141,23 @@ dev.off()
 line_main <- -0.8
 adj_main  <- 0.07
 cex_main  <- 1.5
+zlim_tb_iqr <- range(c(raster::cellStats(sst_tb_iqr, range),
+                       raster::cellStats(sst_tb_iqr, range)))
 
 #### Set up plot to save 
+
 tiff("./fig/sensitivity_tb_iqr.tiff", 
      height = 5.5, width = 6.75, units = "in", res = 600)
 pp <- par(mfrow = c(2, 1), oma = c(0, 0, 1, 5), mar = c(0, 2.1, 0, 2.1))
 
 #### sst_str_mean
-plot_raster(sst_tb_iqr, select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
+plot_raster(sst_tb_iqr, zlim = zlim_tb_iqr, 
+            select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
 mtext(side = 3, "A (IQR STI - SST)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### sbt_str_mean
-plot_raster(sbt_tb_iqr, select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
+plot_raster(sbt_tb_iqr, zlim = zlim_tb_iqr, 
+            select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
 mtext(side = 3, "B (IQR STI - SBT)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### Save plot 

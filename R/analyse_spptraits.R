@@ -68,7 +68,15 @@ head(spp_tbl)
 #### Lifestyle
 get_habits <- FALSE
 if(get_habits){
+  #### Get fishbase data 
+  # Get data 
   fb <- rfishbase::species()
+  # Check proportion of species with data 
+  table(!is.na(fb$Importance))/nrow(fb)*100
+  # Check background importance proportions - is there a bias towards commercial species? 
+  table(fb$Importance)/sum(table(fb$Importance))*100
+  
+  #### Get fishbase data for modelled species
   spptraits$habit <- fb$DemersPelag[match(spptraits$spp, fb$Species)]
   table(is.na(spptraits$habit))
   table(spptraits$habit)
