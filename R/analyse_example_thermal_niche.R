@@ -128,7 +128,7 @@ legend("topright", pch = c(23, 21), pt.bg = c("black", "black"),  col = c("black
 axis(side = 1, seq(xlim1, xlim2, by = 10), pos = 0)
 axis(side = 2, seq(0, 1, by = 0.25), pos = xlim1, las = 2)
 mtext(side = 1, expression(paste("Temperature, T (", degree, "C)", sep = "")), line = 2.5)
-mtext(side = 2, "Relative Abundance, A", line = 2.5)
+mtext(side = 2, "Index of relative abundance, IRA", line = 2.5)
 
 #### Save 
 dev.off()
