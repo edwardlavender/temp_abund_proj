@@ -43,11 +43,16 @@ table(spptraits$class)
 table(spptraits$order)  
 
 #### Define table 
+# Define table
 spp_tbl <- 
   spptraits %>%
   dplyr::select(order, family, genus, species_epiphet, occur_cells, sst_t10, sst_t50, sst_t90) %>%
   dplyr::arrange(order, family, genus, species_epiphet)
 colnames(spp_tbl) <- c("Order", "Family", "Genus", "Species", "Cells", "T10", "T50", "T90")
+# Round thermal affinities
+spp_tbl$T10 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T10, 2), 2)
+spp_tbl$T50 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T50, 2), 2)
+spp_tbl$T90 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T90, 2), 2)
 # 'Cells' is the number of unique 0.5 degree cells containing valid occurrences ('occurcells' parameter)
 # Aquamaps warns against using maps with fewer than 10 'occurcells'
 
