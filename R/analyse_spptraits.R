@@ -61,10 +61,13 @@ head(spp_tbl)
 #### Depth preferences 
 
 #### Lifestyle
-fb <- rfishbase::species()
-spptraits$habit <- fb$DemersPelag[match(spptraits$spp, fb$Species)]
-table(is.na(spptraits$habit))
-table(spptraits$habit)
+get_habits <- FALSE
+if(get_habits){
+  fb <- rfishbase::species()
+  spptraits$habit <- fb$DemersPelag[match(spptraits$spp, fb$Species)]
+  table(is.na(spptraits$habit))
+  table(spptraits$habit)
+}
 
 #### Get depth quantiles 
 table(!is.na(spptraits$depth_range_shallow))
@@ -344,6 +347,7 @@ tiff("./fig/thermal_affinity_correlations.tiff",
      height = 6, width = 6, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(2.5, 2.5, 2, 2), mar = c(1, 2, 2, 1))
 xlim <- ylim <- c(-5, 30)
+line_main <- -0.4
 
 #### T10
 pretty_plot(spptraits$sbt_t10, spptraits$sst_t10, 
@@ -352,7 +356,8 @@ pretty_plot(spptraits$sbt_t10, spptraits$sst_t10,
             col = scales::alpha("black", 0.75), cex = 0.8)
 
 lines(xlim, ylim)
-mtext(side = 3, "A [T10]", adj = 0, font = 2, cex = 1.25)
+mtext(side = 3, expression(paste(bold("A "), "[", T[10], "]")),
+      adj = 0, font = 2, cex = 1.25, line = line_main)
 
 #### STR
 pretty_plot(spptraits$sbt_t50, spptraits$sst_t50, 
@@ -360,7 +365,8 @@ pretty_plot(spptraits$sbt_t50, spptraits$sst_t50,
             xlim = xlim, ylim = ylim,
             col = scales::alpha("black", 0.75), cex = 0.8)
 lines(xlim, ylim)
-mtext(side = 3, "B [STI]", adj = 0, font = 2, cex = 1.25)
+mtext(side = 3, expression(paste(bold("B "), "[STI]")),
+      adj = 0, font = 2, cex = 1.25, line = line_main)
 
 #### T90
 pretty_plot(spptraits$sbt_t90, spptraits$sst_t90, 
@@ -368,7 +374,8 @@ pretty_plot(spptraits$sbt_t90, spptraits$sst_t90,
             xlim = xlim, ylim = ylim,
             col = scales::alpha("black", 0.75), cex = 0.8)
 lines(xlim, ylim)
-mtext(side = 3, "C [T90]", adj = 0, font = 2, cex = 1.25)
+mtext(side = 3, expression(paste(bold("C "), "[", T[90], "]")),
+      adj = 0, font = 2, cex = 1.25, line = line_main)
 
 #### STR
 pretty_plot(spptraits$sbt_str, spptraits$sst_str, 
@@ -376,7 +383,8 @@ pretty_plot(spptraits$sbt_str, spptraits$sst_str,
             xlim = xlim, ylim = ylim,
             col = scales::alpha("black", 0.75), cex = 0.8)
 lines(xlim, ylim)
-mtext(side = 3, "D [STR]", adj = 0, font = 2, cex = 1.25)
+mtext(side = 3, expression(paste(bold("D "), "[STR]")),
+      adj = 0, font = 2, cex = 1.25, line = line_main)
 
 #### Save figure 
 mtext(side = 1, expression(paste("SBT (", degree, "C)")), line = 1.5, cex = 1.5, outer = TRUE)
