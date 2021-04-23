@@ -42,6 +42,9 @@ table(spptraits$class)
 #    2271             22
 table(spptraits$order)  
 
+#### Occur cells 
+utils.add::basic_stats(spptraits$occur_cells)
+
 #### Define table 
 # Define table
 spp_tbl <- 
