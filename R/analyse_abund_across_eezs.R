@@ -180,7 +180,7 @@ if(run){
   # Define colours 
   cols <- rev(pal(n_cols))
   # Define latitudinal bands 
-  # (use absolute latitudes so that the plot is symmetric about the equator)
+  # (use Absolute latitudes so that the plot is symmetric about the equator)
   breaks <- seq(0, 90, length.out = n_cols)
   data_legend <- data.frame(x = breaks, col = cols)
   data_legend$col <- as.character(data_legend$col)
@@ -327,8 +327,8 @@ barplot_across_eezs <- function(data, type = "avg",
 
 #### SST
 ## Set up plot 
-tiff("./fig/proj_abund_by_eez_mean_sst.tif", 
-     height = 8, width = 12, units = "in", res = 600)
+png("./fig/proj_abund_by_eez_mean_sst.png", 
+     height = 8, width = 12, units = "in", res = 300)
 pp <- par(oma = c(2, 9, 1, 2), mar = c(1, 6, 1, 6))
 mat <- matrix(c(1, 2, 3, 4,
                 1, 2, 3, 5), nrow = 2, byrow = TRUE)
@@ -363,7 +363,7 @@ pn <- par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = T
 TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                pretty_axis_args = axis_legend,
                mtext_args = list(side = 4, 
-                                 text = expression(paste("Absolute Latitude (", degree, ")")), 
+                                 text = expression(paste("Absolute latitude (", degree, ")")), 
                                  line = 4.25, 
                                  cex = 1.5)), 
                x = 2.2, y = 6, size = c(0.08, 5), vadj = 0, hadj = 0)
@@ -371,7 +371,7 @@ par(pn)
 ## Save 
 mtext(side = 1, expression(paste("Mean ", E(Delta ~ IRA), " in each EEZ, ", E(Delta ~ IRA[EEZ]))), 
       cex = 1.5, line = 1, outer = TRUE)
-mtext(side = 2, "EEZ Authority", cex = 1.5, line = 4, outer = TRUE)
+mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
 
@@ -384,8 +384,8 @@ dev.off()
 
 #### SST
 ## Set up plot 
-tiff("./fig/proj_abund_by_eez_pr_sst.tif", 
-     height = 8, width = 12, units = "in", res = 600)
+png("./fig/proj_abund_by_eez_pr_sst.png", 
+     height = 8, width = 12, units = "in", res = 300)
 mat <- matrix(c(1, 2, 3, 4,
                 1, 2, 3, 5), nrow = 2, byrow = TRUE)
 layout(mat)
@@ -410,7 +410,7 @@ pn <- par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = T
 TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                                       pretty_axis_args = axis_legend,
                                       mtext_args = list(side = 4, 
-                                                        text = expression(paste("Absolute Latitude (", degree, ")")), 
+                                                        text = expression(paste("Absolute latitude (", degree, ")")), 
                                                         line = 4, 
                                                         cex = 1.5)), 
                        x = 1.75, y = 8, size = c(0.08, 5), vadj = 0, hadj = 0)
@@ -418,7 +418,7 @@ par(pn)
 ## Save 
 mtext(side = 1, expression("Prop. spp. predicted to decline in IRA in each EEZ," ~ Pr(Delta ~ IRA[EEZ] < 0)), 
       cex = 1.5, line = 1, outer = TRUE)
-mtext(side = 2, "EEZ Authority", cex = 1.5, line = 4, outer = TRUE)
+mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
 #### SBT [copy from above with 'sst' replaced by 'sbt']
@@ -450,8 +450,8 @@ ab_sst_summary_25 <-
 data = ab_sst_summary_25
 
 #### Set up plot 
-tiff("./fig/proj_abund_by_eez_25_sst.tif", 
-     height = 10, width = 10, units = "in", res = 600)
+png("./fig/proj_abund_by_eez_25_sst.png", 
+     height = 10, width = 10, units = "in", res = 300)
 
 #### Set plotting window 
 mat <- matrix(c(1, 1, 2), ncol = 3, byrow = T); mat
@@ -468,7 +468,7 @@ barplot_across_eezs(ab_sst_summary_25,
                     arrows_length = 0.025, arrows_lwd = 1.5, 
                     cex.axis = 1.75)
 mtext(side = 1, expression(E(Delta ~ IRA[EEZ])), cex = 1.5, line = 2.5)
-mtext(side = 2, "EEZ Authority", cex = 1.5, line = 15, outer = TRUE)
+mtext(side = 2, "EEZ authority", cex = 1.5, line = 15, outer = TRUE)
 
 #### Pr species predicted to decline in IRA 
 barplot_across_eezs(ab_sst_summary_25, 

@@ -84,8 +84,8 @@ adj_main  <- 0.05
 cex_main  <- 1.5
 
 #### Set up plot to save 
-tiff("./fig/sensitivity.tiff", 
-     height = 5.5, width = 12, units = "in", res = 600)
+png("./fig/sensitivity.png", 
+     height = 5.5, width = 12, units = "in", res = 300)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.45, 0, 2.45))
 sp <- c(0.99, 1, 0.2, 0.8)
 
@@ -146,8 +146,8 @@ zlim_tb_iqr <- range(c(raster::cellStats(sst_tb_iqr, range),
 
 #### Set up plot to save 
 
-tiff("./fig/sensitivity_tb_iqr.tiff", 
-     height = 5.5, width = 6.75, units = "in", res = 600)
+png("./fig/sensitivity_tb_iqr.png", 
+     height = 5.5, width = 6.75, units = "in", res = 300)
 pp <- par(mfrow = c(2, 1), oma = c(0, 0, 1, 5), mar = c(0, 2.1, 0, 2.1))
 
 #### sst_str_mean

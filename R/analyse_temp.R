@@ -82,8 +82,8 @@ sbt_late_rcp85 <- raster::mask(sbt_late_rcp85, cover)
 #### Historical temperatures
 
 #### Set up plot to save 
-tiff("./fig/sst_sbt_historical.tiff", 
-     height = 5, width = 6, units = "in", res = 600)
+png("./fig/sst_sbt_historical.png", 
+     height = 5, width = 6, units = "in", res = 300)
 pp <- par(mfrow = c(2, 1), oma = c(0, 0, 0.5, 4), mar = c(0, 0, 0.5, 0.5))
 
 #### Param 
@@ -179,8 +179,8 @@ raster::spplot(sst_n,
 #### Publication-quality visualisation 
 
 #### Set up plot to save 
-tiff("./fig/sst_projections.tiff", 
-     height = 6, width = 12, units = "in", res = 600)
+png("./fig/sst_projections.png", 
+     height = 6, width = 12, units = "in", res = 300)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 1.25, 0, 1))
 
 #### Param
@@ -294,8 +294,8 @@ raster::plot(sbt_5)
 #### Publication-quality visualisation 
 
 #### Set up plot to save 
-tiff("./fig/sbt_projections.tiff", 
-     height = 6, width = 12, units = "in", res = 600)
+png("./fig/sbt_projections.png", 
+     height = 6, width = 12, units = "in", res = 300)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 1.5, 0, 1))
 
 #### Param

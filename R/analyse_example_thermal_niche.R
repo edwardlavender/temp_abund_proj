@@ -51,8 +51,8 @@ xlim1 <- -10
 xlim2 <- 40
 
 #### Set up to save figure
-tiff("./fig/example_thermal_niche.tiff", 
-     height = 4, width = 5, units = "in", res = 600)
+png("./fig/example_thermal_niche.png", 
+     height = 4, width = 5, units = "in", res = 300)
 
 #### Make blank plot of abundance ~ temperature 
 # 'Abundance' will be scaled later so we'll set the axes to be 0 - 1 here 

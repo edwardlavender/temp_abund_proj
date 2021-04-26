@@ -117,8 +117,8 @@ utils.add::basic_stats(abs(ab_sst_summary_avg$avg_late_delta))
 #### Visual comparison (late-century)
 
 ### Set up plot 
-tiff("./fig/compare_scenarios.tiff", 
-     height = 4, width = 8, units = "in", res = 600)
+png("./fig/compare_scenarios.png", 
+     height = 4, width = 8, units = "in", res = 300)
 pp <- par(mfrow = c(1, 2), 
           oma = c(2, 3, 2, 5), 
           mar = c(2, 2, 2, 2))
