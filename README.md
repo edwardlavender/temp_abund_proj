@@ -26,9 +26,9 @@ Project`, for Lavender, Fox and Burrows (in review). Modelling the
 impacts of climate change on the relative abundance of shallow-water
 marine fish at a global scale.
 
-In this work, we developed an approach based on species’ thermal niches
-to predict changes in the relative abundance of more than 2,000
-shallow-water marine fish species under future temperature change
+In this work, we developed an approach based on species’ thermal
+affinities to predict changes in the relative abundance of more than
+2,000 shallow-water marine fish species under future temperature change
 scenarios (Figure 1).
 
 <img src="README_overview.png"/>
@@ -40,26 +40,28 @@ species. For each species, we overlaid a model of occurrence with
 baseline sea surface temperature (SST) or sea bottom temperature (SBT)
 data to estimate quantiles of observed variation in occupied
 temperatures, from which we inferred thermal affinities. For example, we
-took the median temperature across the species’ range (T50) as the
-optimum temperature for that species and the 10th and 90th percentiles
-as the species’ thermal range, respectively. We used these to
-parameterise a Gaussian model relating temperature to an index of
-relative abundance, with a mean equal to the optimum temperature and a
-variance based on the thermal range. The central premise of this model
-is that species tend to be more abundant around thermal optima and less
-abundant elsewhere; this is known as the abundance-centre hypothesis. To
-predict change in the index of relative abundance, we fed this model
-with baseline and future temperatures derived from CMIP5 (Coupled Model
-Intercomparison Phase Project Phase 5) models. For populations living
-below the optimum temperature, in the blue half of the Gaussian
-distribution shown, an increase in temperature is assumed to lead to an
-increase in relative abundance. And for populations living above the
-optimum temperature, in the red half, an increase in temperature is
-assumed to lead to a decline in relative abundance. In this way, for
-every species, we predicted the index of relative abundance in each grid
-cell in which it currently occurs under baseline and future temperatures
-and calculated the change in the index of relative abundance. We then
-synthesised patterns across all species and exclusive economic zones.*
+took the median temperature across the species’ range (the species’
+thermal index, STI) as the optimum temperature for that species and the
+10th (T10) and 90th (T90) percentiles to define the species’ thermal
+range (T90 - T10). We used these to parameterise a climate response
+curve: a Gaussian model relating temperature to an index of relative
+abundance, termed the climate response curve abundance index (CRCA),
+with a mean equal to the optimum temperature and a variance based on the
+thermal range. The central premise of this model is that species tend to
+be more abundant around thermal optima and less abundant elsewhere; this
+is known as the abundance-centre hypothesis. To predict change in the
+index of relative abundance, we fed this model with baseline and future
+temperatures derived from CMIP5 (Coupled Model Intercomparison Phase
+Project Phase 5) models. For populations living below the optimum
+temperature, in the blue half of the Gaussian distribution shown, an
+increase in temperature is assumed to lead to an increase in relative
+abundance. And for populations living above the optimum temperature, in
+the red half, an increase in temperature is assumed to lead to a decline
+in relative abundance. In this way, for every species, we predicted the
+relative abundance in each grid cell in which it currently occurs under
+baseline and future temperatures and calculated the change in relative
+abundance. We then synthesised patterns across all species and Exclusive
+Economic Zones.*
 
 ## Structure
 
@@ -199,7 +201,8 @@ in the online version of this repository.
       - distribution;
       - commercial importance;
 
-2.  `analyse_example_thermal_niche.R` analyses an example thermal niche.
+2.  `analyse_example_thermal_niche.R` analyses an example thermal niche
+    and `analyse_sdm_aquamaps_example.R` analyses an example SDM.
 
 3.  `analyse_temp.R` analyses SST and SBT temperature projections, for
     all scenarios.
