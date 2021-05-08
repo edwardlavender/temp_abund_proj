@@ -369,7 +369,7 @@ TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                x = 2.2, y = 6, size = c(0.08, 5), vadj = 0, hadj = 0)
 par(pn)
 ## Save 
-mtext(side = 1, expression(paste("Mean ", E(Delta ~ IRA), " in each EEZ, ", E(Delta ~ IRA[EEZ]))), 
+mtext(side = 1, expression(paste("Mean ", E(Delta ~ CRCA), " in each EEZ, ", E(Delta ~ CRCA[EEZ]))), 
       cex = 1.5, line = 1, outer = TRUE)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
@@ -416,7 +416,7 @@ TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                        x = 1.75, y = 8, size = c(0.08, 5), vadj = 0, hadj = 0)
 par(pn)
 ## Save 
-mtext(side = 1, expression("Prop. spp. predicted to decline in IRA in each EEZ," ~ Pr(Delta ~ IRA[EEZ] < 0)), 
+mtext(side = 1, expression("Pr. spp. predicted to decline in CRCA in each EEZ," ~ Pr(Delta ~ CRCA[EEZ] < 0)), 
       cex = 1.5, line = 1, outer = TRUE)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
@@ -459,7 +459,7 @@ layout(mat)
 pp <- par(oma = c(5, 20, 0, 10), 
           mar = c(2, 2, 2, 2)) 
 
-#### Mean change in IRA 
+#### Mean change in CRCA 
 barplot_across_eezs(ab_sst_summary_25, 
                     type = "avg", 
                     x_grid = 0.5,
@@ -467,10 +467,10 @@ barplot_across_eezs(ab_sst_summary_25,
                     arrows_col = c(scales::alpha("black", 0.6), "black"),
                     arrows_length = 0.025, arrows_lwd = 1.5, 
                     cex.axis = 1.75)
-mtext(side = 1, expression(E(Delta ~ IRA[EEZ])), cex = 1.5, line = 2.5)
+mtext(side = 1, expression(E(Delta ~ CRCA[EEZ])), cex = 1.5, line = 2.5)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 15, outer = TRUE)
 
-#### Pr species predicted to decline in IRA 
+#### Pr species predicted to decline in CRCA 
 barplot_across_eezs(ab_sst_summary_25, 
                     type = "pr", xlim = c(0, 1),
                     x_grid = 0.25,
@@ -480,7 +480,7 @@ barplot_across_eezs(ab_sst_summary_25,
                     cex.axis = 1.75,
                     add_y_labels = FALSE)
 
-mtext(side = 1, expression(Pr(Delta ~ IRA[EEZ] < 0)), cex = 1.5, line = 2.5)
+mtext(side = 1, expression(Pr(Delta ~ CRCA[EEZ] < 0)), cex = 1.5, line = 2.5)
 
 #### Save 
 dev.off()

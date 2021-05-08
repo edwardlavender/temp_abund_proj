@@ -118,7 +118,7 @@ plot_projections <- function(x, zlim = NULL, type = 1, mask = NULL){
     TeachingDemos::subplot(prettyGraphics::add_colour_bar(data_legend = data_legend,
                                                           pretty_axis_args = axis_legend,
                                                           mtext_args = list(side = 4, 
-                                                                            text = expression(paste(Delta, "IRA")), 
+                                                                            text = expression(paste(Delta, "CRCA")), 
                                                                             line = 3.5, 
                                                                             cex = 1.25)), 
                            x = 180, y = -77, size = c(0.08, 4), vadj = 0, hadj = 0)
@@ -137,7 +137,7 @@ png("./fig/proj_abund_sst_mean.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_mean, sst_late_rcp45_mean, sst_mid_rcp45_mean, sst_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in IRA, ", E(Delta ~ IRA["i,j"]))), 
+      expression(paste("Mean change in CRCA, ", E(Delta ~ CRCA["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -147,7 +147,7 @@ png("./fig/proj_abund_sst_pr.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_pr, sst_late_rcp45_pr, sst_mid_rcp45_pr, sst_late_rcp85_pr), type = 2)
 mtext(side = 4, 
-      expression(paste("Prop. spp. with declines in IRA, ", Pr(Delta ~ IRA["i,j"] < 0))),
+      expression(paste("Pr. spp. w/ declines in CRCA, ", Pr(Delta ~ CRCA["i,j"] < 0))),
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -157,7 +157,7 @@ png("./fig/proj_abund_sbt_mean.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sbt_mid_rcp45_mean, sbt_late_rcp45_mean, sbt_mid_rcp45_mean, sbt_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in IRA, ", E(Delta ~ IRA["i,j"]))), 
+      expression(paste("Mean change in CRCA, ", E(Delta ~ CRCA["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
