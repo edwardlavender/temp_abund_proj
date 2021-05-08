@@ -219,7 +219,7 @@ axis_legend[[1]]$axis$cex.axis <- 1.25
 TeachingDemos::subplot(prettyGraphics::add_colour_bar(data_legend = data_legend,
                                                       pretty_axis_args = axis_legend,
                                                       mtext_args = list(side = 4, 
-                                                                        text = expression(paste("Absolute Latitude (", degree, ")")), 
+                                                                        text = expression(paste("Absolute latitude (", degree, ")")), 
                                                                         line = 2.8, 
                                                                         cex = 1.25
                                                       )
