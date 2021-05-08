@@ -118,7 +118,7 @@ utils.add::basic_stats(abs(ab_sst_summary_avg$avg_late_delta))
 
 ### Set up plot 
 png("./fig/compare_scenarios.png", 
-     height = 4, width = 8, units = "in", res = 300)
+     height = 4, width = 8, units = "in", res = 600)
 pp <- par(mfrow = c(1, 2), 
           oma = c(2, 3, 2, 5), 
           mar = c(2, 2, 2, 2))

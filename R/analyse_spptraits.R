@@ -97,7 +97,7 @@ qd
 #### Make figure
 
 ## Set up figure to save 
-png("./fig/depth_quantiles.png", height = 5, width = 5, units = "in", res = 300)
+png("./fig/depth_quantiles.png", height = 5, width = 5, units = "in", res = 600)
 cex_axis <- 1.1
 cex_lab  <- 1.1
 
@@ -214,7 +214,7 @@ if(run){
 #### Plot map
 # Set up figure
 png("./fig/spp_richness_map.png", 
-     height = 8, width = 10, units = "in", res = 300)
+     height = 8, width = 10, units = "in", res = 600)
 pp <- par(oma = c(1, 1, 1, 5))
 cex_axis <- 1.25
 cex_lab  <- 1.5
@@ -360,7 +360,7 @@ par(pp)
 
 #### Set up figure
 png("./fig/thermal_affinity_correlations.png", 
-     height = 6, width = 6, units = "in", res = 300)
+     height = 6, width = 6, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(2.5, 2.5, 2, 2), mar = c(1, 2, 2, 1))
 xlim <- ylim <- c(-5, 30)
 line_main <- -0.4

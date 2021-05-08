@@ -83,7 +83,7 @@ sbt_late_rcp85 <- raster::mask(sbt_late_rcp85, cover)
 
 #### Set up plot to save 
 png("./fig/sst_sbt_historical.png", 
-     height = 5, width = 6, units = "in", res = 300)
+     height = 5, width = 6, units = "in", res = 600)
 pp <- par(mfrow = c(2, 1), oma = c(0, 0, 0.5, 4), mar = c(0, 0, 0.5, 0.5))
 
 #### Param 
@@ -180,7 +180,7 @@ raster::spplot(sst_n,
 
 #### Set up plot to save 
 png("./fig/sst_projections.png", 
-     height = 6, width = 12, units = "in", res = 300)
+     height = 6, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 1.25, 0, 1))
 
 #### Param
@@ -295,7 +295,7 @@ raster::plot(sbt_5)
 
 #### Set up plot to save 
 png("./fig/sbt_projections.png", 
-     height = 6, width = 12, units = "in", res = 300)
+     height = 6, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 1.5, 0, 1))
 
 #### Param

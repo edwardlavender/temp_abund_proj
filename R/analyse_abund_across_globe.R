@@ -133,7 +133,7 @@ plot_projections <- function(x, zlim = NULL, type = 1, mask = NULL){
 
 #### SST (mean)
 png("./fig/proj_abund_sst_mean.png", 
-     height = 5.5, width = 12, units = "in", res = 300)
+     height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_mean, sst_late_rcp45_mean, sst_mid_rcp45_mean, sst_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
@@ -143,7 +143,7 @@ dev.off()
 
 #### SST (pr)
 png("./fig/proj_abund_sst_pr.png", 
-     height = 5.5, width = 12, units = "in", res = 300)
+     height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_pr, sst_late_rcp45_pr, sst_mid_rcp45_pr, sst_late_rcp85_pr), type = 2)
 mtext(side = 4, 
@@ -153,7 +153,7 @@ dev.off()
 
 #### SBT (mean)
 png("./fig/proj_abund_sbt_mean.png", 
-     height = 5.5, width = 12, units = "in", res = 300)
+     height = 5.5, width = 12, units = "in", res = 600)
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sbt_mid_rcp45_mean, sbt_late_rcp45_mean, sbt_mid_rcp45_mean, sbt_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 

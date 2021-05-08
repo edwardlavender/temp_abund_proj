@@ -328,7 +328,7 @@ barplot_across_eezs <- function(data, type = "avg",
 #### SST
 ## Set up plot 
 png("./fig/proj_abund_by_eez_mean_sst.png", 
-     height = 8, width = 12, units = "in", res = 300)
+     height = 8, width = 12, units = "in", res = 600)
 pp <- par(oma = c(2, 9, 1, 2), mar = c(1, 6, 1, 6))
 mat <- matrix(c(1, 2, 3, 4,
                 1, 2, 3, 5), nrow = 2, byrow = TRUE)
@@ -385,7 +385,7 @@ dev.off()
 #### SST
 ## Set up plot 
 png("./fig/proj_abund_by_eez_pr_sst.png", 
-     height = 8, width = 12, units = "in", res = 300)
+     height = 8, width = 12, units = "in", res = 600)
 mat <- matrix(c(1, 2, 3, 4,
                 1, 2, 3, 5), nrow = 2, byrow = TRUE)
 layout(mat)
@@ -451,7 +451,7 @@ data = ab_sst_summary_25
 
 #### Set up plot 
 png("./fig/proj_abund_by_eez_25_sst.png", 
-     height = 10, width = 10, units = "in", res = 300)
+     height = 10, width = 10, units = "in", res = 600)
 
 #### Set plotting window 
 mat <- matrix(c(1, 1, 2), ncol = 3, byrow = T); mat
