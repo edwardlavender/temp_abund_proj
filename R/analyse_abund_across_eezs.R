@@ -456,7 +456,7 @@ png("./fig/proj_abund_by_eez_25_sst.png",
 #### Set plotting window 
 mat <- matrix(c(1, 1, 2), ncol = 3, byrow = T); mat
 layout(mat)
-pp <- par(oma = c(5, 20, 0, 10), 
+pp <- par(oma = c(5, 20, 0, 12), 
           mar = c(2, 2, 2, 2)) 
 
 #### Mean change in CRCA 
@@ -479,8 +479,18 @@ barplot_across_eezs(ab_sst_summary_25,
                     arrows_length = 0.025, arrows_lwd = 1.5, 
                     cex.axis = 1.75,
                     add_y_labels = FALSE)
+mtext(side = 1.5, expression(Pr(Delta ~ CRCA[EEZ] < 0)), cex = 1.5, line = 2.5)
 
-mtext(side = 1, expression(Pr(Delta ~ CRCA[EEZ] < 0)), cex = 1.5, line = 2.5)
+#### Legend and labelling
+axis_legend[[1]]$axis$cex.axis <- 1.75
+TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
+                                      pretty_axis_args = axis_legend,
+                                      mtext_args = list(side = 4, 
+                                                        text = expression(paste("Absolute latitude (", degree, ")")), 
+                                                        line = 6, 
+                                                        cex = 1.5)), 
+                       x = 1.125, y = 6, size = c(0.08, 6), vadj = 0, hadj = 0)
+
 
 #### Save 
 dev.off()
