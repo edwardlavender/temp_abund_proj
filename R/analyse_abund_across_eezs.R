@@ -369,7 +369,7 @@ TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                x = 2.2, y = 6, size = c(0.08, 5), vadj = 0, hadj = 0)
 par(pn)
 ## Save 
-mtext(side = 1, expression(paste("Mean ", E(Delta ~ CRCA), " in each EEZ, ", E(Delta ~ CRCA[EEZ]))), 
+mtext(side = 1, expression(paste("Mean ", E(Delta ~ CRCS), " in each EEZ, ", E(Delta ~ CRCS[EEZ]))), 
       cex = 1.5, line = 1, outer = TRUE)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
@@ -416,7 +416,7 @@ TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                        x = 1.75, y = 8, size = c(0.08, 5), vadj = 0, hadj = 0)
 par(pn)
 ## Save 
-mtext(side = 1, expression("Pr. spp. predicted to decline in CRCA in each EEZ," ~ Pr(Delta ~ CRCA[EEZ] < 0)), 
+mtext(side = 1, expression("Pr. spp. predicted to decline in CRCS in each EEZ," ~ Pr(Delta ~ CRCS[EEZ] < 0)), 
       cex = 1.5, line = 1, outer = TRUE)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
@@ -459,7 +459,7 @@ layout(mat)
 pp <- par(oma = c(5, 20, 0, 12), 
           mar = c(2, 2, 2, 2)) 
 
-#### Mean change in CRCA 
+#### Mean change in CRCS 
 barplot_across_eezs(ab_sst_summary_25, 
                     type = "avg", 
                     x_grid = 0.5,
@@ -467,10 +467,10 @@ barplot_across_eezs(ab_sst_summary_25,
                     arrows_col = c(scales::alpha("black", 0.6), "black"),
                     arrows_length = 0.025, arrows_lwd = 1.5, 
                     cex.axis = 1.75)
-mtext(side = 1, expression(E(Delta ~ CRCA[EEZ])), cex = 1.5, line = 2.5)
+mtext(side = 1, expression(E(Delta ~ CRCS[EEZ])), cex = 1.5, line = 2.5)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 15, outer = TRUE)
 
-#### Pr species predicted to decline in CRCA 
+#### Pr species predicted to decline in CRCS 
 barplot_across_eezs(ab_sst_summary_25, 
                     type = "pr", xlim = c(0, 1),
                     x_grid = 0.25,
@@ -479,7 +479,7 @@ barplot_across_eezs(ab_sst_summary_25,
                     arrows_length = 0.025, arrows_lwd = 1.5, 
                     cex.axis = 1.75,
                     add_y_labels = FALSE)
-mtext(side = 1.5, expression(Pr(Delta ~ CRCA[EEZ] < 0)), cex = 1.5, line = 2.5)
+mtext(side = 1.5, expression(Pr(Delta ~ CRCS[EEZ] < 0)), cex = 1.5, line = 2.5)
 
 #### Legend and labelling
 axis_legend[[1]]$axis$cex.axis <- 1.75

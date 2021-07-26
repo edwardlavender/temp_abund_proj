@@ -74,7 +74,7 @@ px <- par(xpd = NA)
 text(sti, 1+0.05, "STI")
 par(px)
 
-#### Colour the warm/cold halfs of the distribution 
+#### Colour the warm/cold halves of the distribution 
 position1 <- which(x < sti)[length(which(x < sti))]
 position2 <- which(x > sti)[1]
 x_cold <- x[1:position1]
@@ -118,8 +118,8 @@ arrows(x0 = t2 + offset, x1 = t2 + offset, y0 = abundance_t1, y1 = abundance_t2 
 
 #### Add legend
 legend("topright", pch = c(23, 21), pt.bg = c("black", "black"),  col = c("black", "black"), 
-       legend = c(expression(CRCA[T[0]]), 
-                  expression(CRCA[T[0] ~ paste("+", Delta, "T", sep = "")])), 
+       legend = c(expression(CRCS[T[0]]), 
+                  expression(CRCS[T[0] ~ paste("+", Delta, "T", sep = "")])), 
        box.lty = 3,
        box.lwd = 0.5,
        y.intersp = 1.5)
@@ -128,7 +128,7 @@ legend("topright", pch = c(23, 21), pt.bg = c("black", "black"),  col = c("black
 axis(side = 1, seq(xlim1, xlim2, by = 10), pos = 0)
 axis(side = 2, seq(0, 1, by = 0.25), pos = xlim1, las = 2)
 mtext(side = 1, expression(paste("Temperature, T (", degree, "C)", sep = "")), line = 2.5)
-mtext(side = 2, "Index of relative abundance, CRCA", line = 2.5)
+mtext(side = 2, "Thermal habitat suitability, CRCS", line = 2.5)
 
 #### Save 
 dev.off()

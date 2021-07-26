@@ -166,8 +166,8 @@ add_error_envelope(x, preds,
                    add_fit = list(lwd = 0.75))
 
 ## Add titles
-mtext(side = 1, expression(paste(E(Delta ~ CRCA[EEZ]), " in RCP 4.5 [L]")), line = 2.5, cex = 1.25)
-mtext(side = 2, expression(paste(E(Delta ~ CRCA[EEZ]), " in RCP 8.5 [L]")), line = 3, cex = 1.25)
+mtext(side = 1, expression(paste(E(Delta ~ CRCS[EEZ]), " in RCP 4.5 [L]")), line = 2.5, cex = 1.25)
+mtext(side = 2, expression(paste(E(Delta ~ CRCS[EEZ]), " in RCP 8.5 [L]")), line = 3, cex = 1.25)
 mtext(side = 3, font = 2, "A", line = 0.5, adj = 0, cex = 1.25)
 
 
@@ -207,7 +207,7 @@ legend(0.01, ylim[2] * 1.075,
        cex = 1)
 
 ## Add titles
-mtext(side = 1, expression(Pr(Delta ~ CRCA[EEZ] < 0)), line = 2.5, cex = 1.25)
+mtext(side = 1, expression(Pr(Delta ~ CRCS[EEZ] < 0)), line = 2.5, cex = 1.25)
 mtext(side = 2, "Density", cex = 1.25, line = 2.5)
 mtext(side = 3, font = 2, "B", cex = 1.25, adj = 0, line = 0.5)
 

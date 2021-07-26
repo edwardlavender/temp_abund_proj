@@ -137,7 +137,7 @@ png("./fig/proj_abund_sst_mean.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_mean, sst_late_rcp45_mean, sst_mid_rcp45_mean, sst_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in CRCA, ", E(Delta ~ CRCA["i,j"]))), 
+      expression(paste("Mean change in CRCS, ", E(Delta ~ CRCS["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -147,7 +147,7 @@ png("./fig/proj_abund_sst_pr.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sst_mid_rcp45_pr, sst_late_rcp45_pr, sst_mid_rcp45_pr, sst_late_rcp85_pr), type = 2)
 mtext(side = 4, 
-      expression(paste("Pr. spp. w/ declines in CRCA, ", Pr(Delta ~ CRCA["i,j"] < 0))),
+      expression(paste("Pr. spp. w/ declines in CRCS, ", Pr(Delta ~ CRCS["i,j"] < 0))),
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
@@ -157,7 +157,7 @@ png("./fig/proj_abund_sbt_mean.png",
 pp <- par(mfrow = c(2, 2), oma = c(0, 0, 1, 5), mar = c(0, 2.4, 0, 2.4))
 plot_projections(list(sbt_mid_rcp45_mean, sbt_late_rcp45_mean, sbt_mid_rcp45_mean, sbt_late_rcp85_mean), zlim = c(-1, 1))
 mtext(side = 4, 
-      expression(paste("Mean change in CRCA, ", E(Delta ~ CRCA["i,j"]))), 
+      expression(paste("Mean change in CRCS, ", E(Delta ~ CRCS["i,j"]))), 
       cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
