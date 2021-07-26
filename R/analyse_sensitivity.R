@@ -153,12 +153,12 @@ pp <- par(mfrow = c(2, 1), oma = c(0, 0, 1, 5), mar = c(0, 2.1, 0, 2.1))
 #### sst_str_mean
 plot_raster(sst_tb_iqr, zlim = zlim_tb_iqr, 
             select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
-mtext(side = 3, "A (IQR STI - SST)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
+mtext(side = 3, "A (IQR SST STB)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### sbt_str_mean
 plot_raster(sbt_tb_iqr, zlim = zlim_tb_iqr, 
             select = 2:8, rev = TRUE, profile_x = c(185, 220), sp = sp)
-mtext(side = 3, "B (IQR STI - SBT)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
+mtext(side = 3, "B (IQR SBT STB)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### Save plot 
 # mtext(side = 1, expression(paste("Longitude (", degree, "C)")), line = 1, cex = 1.5, outer = TRUE)
