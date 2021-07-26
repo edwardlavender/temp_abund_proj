@@ -114,7 +114,7 @@ plot_raster(sst_tb_mean,
             scheme_hot = "Blues",  scheme_cold = "YlOrRd", 
             select_hot = 4:8, select_cold = 4:8,
             sp = sp)
-mtext(side = 3, "C (mean STI - SST)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
+mtext(side = 3, "C (mean SST STB)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### sbt_tb_mean
 plot_raster(sbt_tb_mean, 
@@ -123,7 +123,7 @@ plot_raster(sbt_tb_mean,
             scheme_hot = "Blues", scheme_cold = "YlOrRd", 
             select_hot = 4:8, select_cold = 4:8,
             sp = sp)
-mtext(side = 3, "D (mean STI - SBT)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
+mtext(side = 3, "D (mean SBT STB)", adj = adj_main, line = line_main, cex = cex_main, font = 2)
 
 #### Save plot 
 # mtext(side = 1, expression(paste("Longitude (", degree, "C)")), line = 1, cex = 1.5, outer = TRUE)
