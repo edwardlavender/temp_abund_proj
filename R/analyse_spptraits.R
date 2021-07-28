@@ -56,8 +56,6 @@ colnames(spp_tbl) <- c("Order", "Family", "Genus", "Species", "Cells", "T10", "T
 spp_tbl$T10 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T10, 2), 2)
 spp_tbl$T50 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T50, 2), 2)
 spp_tbl$T90 <- prettyGraphics::add_lagging_point_zero(round(spp_tbl$T90, 2), 2)
-# 'Cells' is the number of unique 0.5 degree cells containing valid occurrences ('occurcells' parameter)
-# Aquamaps warns against using maps with fewer than 10 'occurcells'
 
 #### Save table
 head(spp_tbl)
@@ -407,6 +405,33 @@ mtext(side = 1, expression(paste("SBT (", degree, "C)")), line = 1.5, cex = 1.5,
 mtext(side = 2, expression(paste("SST (", degree, "C)")), line = 0.25, cex = 1.5, outer = TRUE)
 par(pp)
 dev.off()
+
+
+##############################
+##############################
+#### Occur cells
+# Examine the number of cells upon which Aquamaps SDMs are based for modelled species
+
+#### Fewer than 10 cells
+# 'occur_cells' is the number of unique 0.5 degree cells containing valid occurrences ('occurcells' parameter)
+# Aquamaps warns against using maps with fewer than 10 'occurcells'
+# We have excluded those species:
+table(spptraits$occur_cells < 10)
+
+#### Comparison with O'Hara et al (2017) results
+## Occur-cells parameter
+# Species in the 'worst' alignment category in a comparison between IUCN range maps and Aquamaps maps had a median of 10 occur cells
+# Check the number and % of species this applies to in our dataset:
+table(spptraits$occur_cells <= 10); table(spptraits$occur_cells <= 10)[2]/nrow(spp_tbl) * 100
+# Species in the other three alignment categories had median of 41 cells
+# Check the number and % of species with more than 41 cells in our dataset:
+table(spptraits$occur_cells >= 41);  table(spptraits$occur_cells >= 41)[2]/nrow(spp_tbl) * 100
+## Records
+# Repeat this analysis with the OccurRecs parameter
+
+#### Expert judgement
+# Aquamaps fare better when expert judgement is included
+# However, this is not reported via am_search_exact() (see get_sdm_aquamaps.R) 
 
 
 #### End of code. 
