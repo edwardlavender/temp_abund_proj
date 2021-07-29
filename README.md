@@ -246,7 +246,7 @@ global scale.
 -----
 
 \*Predictions of the change in thermal habitat suitability are expected
-to correspond to changes in abundance, with species increasing in
-abundance in areas in which thermal habitat suitability increases and
-declining in areas in which thermal habitat suitability declines, hence
-the naming structure of these files.
+to correspond in broad terms to changes in abundance, with species
+increasing in abundance in areas in which thermal habitat suitability
+increases and declining in areas in which thermal habitat suitability
+declines, hence the naming structure of these files.

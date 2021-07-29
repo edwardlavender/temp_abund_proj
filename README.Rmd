@@ -144,4 +144,4 @@ This repository uses a number of non-default packages, available from [The Compr
 Lavender, Fox and Burrows (in review). Modelling the impacts of climate change on thermal habitat suitability for shallow-water marine fish at a global scale. 
 
 -------------------------------------------------
-*Predictions of the change in thermal habitat suitability are expected to correspond to changes in abundance, with species increasing in abundance in areas in which thermal habitat suitability increases and declining in areas in which thermal habitat suitability declines, hence the naming structure of these files. 
+*Predictions of the change in thermal habitat suitability are expected to correspond in broad terms to changes in abundance, with species increasing in abundance in areas in which thermal habitat suitability increases and declining in areas in which thermal habitat suitability declines, hence the naming structure of these files. 
