@@ -416,8 +416,8 @@ TeachingDemos::subplot(add_colour_bar(data_legend = data_legend,
                        x = 1.75, y = 8, size = c(0.08, 5), vadj = 0, hadj = 0)
 par(pn)
 ## Save 
-mtext(side = 1, expression("Pr. spp. predicted to decline in CRCS in each EEZ," ~ Pr(Delta ~ CRCS[EEZ] < 0)), 
-      cex = 1.5, line = 1, outer = TRUE)
+mtext(side = 1, expression("Pr. spp. predicted to experience declines in CRCS in each EEZ," ~ Pr(Delta ~ CRCS[EEZ] < 0)), 
+      cex = 1.5, line = 1.2, outer = TRUE)
 mtext(side = 2, "EEZ authority", cex = 1.5, line = 4, outer = TRUE)
 dev.off()
 
