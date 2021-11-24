@@ -22,9 +22,10 @@ Fife, Scotland, KY16 9LZ
 ## Introduction
 
 This repository contains methods, written in `R` and organised as an `R
-Project`, for Lavender, Fox and Burrows (in review). Modelling the
-impacts of climate change on thermal habitat suitability for
-shallow-water marine fish at a global scale.
+Project`, for Lavender, Fox and Burrows (2021). Modelling the impacts of
+climate change on thermal habitat suitability for shallow-water marine
+fish at a global scale. PLOS ONE 16(10): e0258184.
+<https://doi.org/10.1371/journal.pone.0258184>
 
 In this work, we developed an approach based on species’ thermal
 affinities to predict changes in thermal habitat suitability for more
@@ -239,9 +240,10 @@ available on [GitHub](https://github.com/) are also used:
 
 ## Citation
 
-Lavender, Fox and Burrows (in review). Modelling the impacts of climate
+Lavender, Fox and Burrows (2021). Modelling the impacts of climate
 change on thermal habitat suitability for shallow-water marine fish at a
-global scale.
+global scale. PLOS ONE 16(10): e0258184.
+<https://doi.org/10.1371/journal.pone.0258184>
 
 -----
 

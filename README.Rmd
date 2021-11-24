@@ -16,7 +16,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 ## Introduction 
 
-This repository contains methods, written in `R` and organised as an `R Project`, for Lavender, Fox and Burrows (in review). Modelling the impacts of climate change on thermal habitat suitability for shallow-water marine fish at a global scale. 
+This repository contains methods, written in `R` and organised as an `R Project`, for Lavender, Fox and Burrows (2021). Modelling the impacts of climate change on thermal habitat suitability for shallow-water marine fish at a global scale. PLOS ONE 16(10): e0258184. https://doi.org/10.1371/journal.pone.0258184
 
 In this work, we developed an approach based on species' thermal affinities to predict changes in thermal habitat suitability for more than 2,000 shallow-water marine fish species under future temperature change scenarios (Figure 1).
 
@@ -141,7 +141,7 @@ This repository uses a number of non-default packages, available from [The Compr
 
 ## Citation
 
-Lavender, Fox and Burrows (in review). Modelling the impacts of climate change on thermal habitat suitability for shallow-water marine fish at a global scale. 
+Lavender, Fox and Burrows (2021). Modelling the impacts of climate change on thermal habitat suitability for shallow-water marine fish at a global scale. PLOS ONE 16(10): e0258184. https://doi.org/10.1371/journal.pone.0258184
 
 -------------------------------------------------
 *Predictions of the change in thermal habitat suitability are expected to correspond in broad terms to changes in abundance, with species increasing in abundance in areas in which thermal habitat suitability increases and declining in areas in which thermal habitat suitability declines, hence the naming structure of these files. 
