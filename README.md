@@ -6,9 +6,10 @@ Burrows<sup>1</sup>
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-[![Project Status: Active – The project has reached a stable, usable
-state and is being actively
-developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status: Inactive – The project has reached a stable, usable
+state but is no longer being actively developed; support/maintenance
+will be provided as time
+allows.](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 
 <sup>1</sup> The Scottish Association for Marine Science, Scottish
 Marine Institute, Dunstaffnage, Oban, Scotland, PA37 1QA  
