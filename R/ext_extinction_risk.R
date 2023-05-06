@@ -54,7 +54,7 @@ sbt_late_rcp45 <- raster::raster("./data/temperature/sbt/late_century/rcp45/rcp4
 sbt_late_rcp85 <- raster::raster("./data/temperature/sbt/late_century/rcp85/rcp85.asc")
 
 #### Global parameters
-overwrite <- FALSE
+overwrite <- TRUE
 
 
 ##############################
@@ -72,6 +72,12 @@ overwrite <- FALSE
 predict_abund <- function(x, sdm, temperature, sti, str_sd, scale = dnorm(sti, mean = sti, sd = str_sd)){
   x[sdm > 0] <- dnorm(temperature[sdm > 0], mean = sti, sd = str_sd)/scale
   return(x)
+}
+
+#### Calculate raster area
+#' This function uses terra::area(), which is more accurate than raster::area()
+raster_area <- function(x) {
+  raster::raster(terra::cellSize(terra::rast(x), mask = TRUE, unit = "km"))
 }
 
 #### Calculate area of suitable habitat, weighted by thermal suitability score 
@@ -111,17 +117,19 @@ change <- function(area, historical, projection) {
 #### Identify the % cells that remain 'hospitable' according to some threshold
 hospitable <- function(historical, projection, threshold = 0.05, plot = FALSE) {
   historical <- historical >= threshold
+  historical <- raster::reclassify(historical, cbind(0, NA))
   projection <- projection >= threshold
-  historical_hospitable  <- raster::cellStats(historical, "sum")
-  projection_hospitable  <- raster::cellStats(projection, "sum")
+  projection <- raster::reclassify(projection, cbind(0, NA))
+  historical_hospitable  <- raster::cellStats(raster_area(historical), "sum")
+  projection_hospitable  <- raster::cellStats(raster_area(projection), "sum")
   change <- ((historical_hospitable - projection_hospitable)/historical_hospitable) * 100
   if (plot) {
     pp <- par(mfrow = c(1, 2))
     on.exit(par(pp), add = TRUE)
     raster::plot(raster::trim(historical), 
-                 main = paste0("H (", historical_hospitable, " cells)"))
+                 main = paste0("H (", historical_hospitable, " km2)"))
     raster::plot(raster::trim(projection), 
-                 main = paste0("P (", projection_hospitable, " cells [", round(change), " %])"))
+                 main = paste0("P (", projection_hospitable, " km2 [", round(change), " %])"))
   }
   change
 }
@@ -137,7 +145,7 @@ if (overwrite | !file.exists(file_out)) {
   #### Set up cluster (~2 s)
   tic()
   cl <- parallel::makeCluster(10L)
-  vl <- c("predict_abund", "calc_suitable_area", "change", "hospitable",
+  vl <- c("predict_abund", "raster_area", "calc_suitable_area", "change", "hospitable",
           "sst_historical",
           "sst_mid_rcp45",
           "sst_mid_rcp85",
@@ -151,7 +159,7 @@ if (overwrite | !file.exists(file_out)) {
   parallel::clusterExport(cl = cl, varlist = vl)
   toc()
   
-  ### Loop over each species and make projections (~6 mins)
+  ### Loop over each species and make projections (~15 mins)
   tic()
   spptraits$index <- seq_len(nrow(spptraits))
   # spptraits <- spptraits[1:50, ]
@@ -167,8 +175,8 @@ if (overwrite | !file.exists(file_out)) {
     # ... cells were the species does not occur will remain as NA 
     blank <- sdm
     blank <- raster::setValues(blank, NA)
-    # Compute raster area, using terra (more precise than raster::area())
-    area  <- raster::raster(terra::cellSize(terra::rast(sdm), mask = TRUE, unit = "km"))
+    # Compute raster area
+    area  <- raster_area(sdm)
     if (FALSE) {
       pp <- par(mfrow = c(1, 2))
       raster::plot(raster::trim(sdm > 0), col = "black")
