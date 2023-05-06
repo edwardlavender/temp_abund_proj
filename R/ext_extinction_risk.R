@@ -54,7 +54,7 @@ sbt_late_rcp45 <- raster::raster("./data/temperature/sbt/late_century/rcp45/rcp4
 sbt_late_rcp85 <- raster::raster("./data/temperature/sbt/late_century/rcp85/rcp85.asc")
 
 #### Global parameters
-overwrite <- TRUE
+overwrite <- FALSE
 
 
 ##############################
@@ -75,15 +75,15 @@ predict_abund <- function(x, sdm, temperature, sti, str_sd, scale = dnorm(sti, m
 }
 
 #### Calculate raster area
-#' This function uses terra::area(), which is more accurate than raster::area()
+#' This function uses terra::area(), which is more accurate than raster::area().
 raster_area <- function(x) {
   raster::raster(terra::cellSize(terra::rast(x), mask = TRUE, unit = "km"))
 }
 
 #### Calculate area of suitable habitat, weighted by thermal suitability score 
 #' The function calculates the area of suitable habitat, weighted by the suitability, for a given RasterLayer (`prediction`). 
-#' @param area A RasterLayer that defines the area of each grid cell
-#' @param prediction A RasterLayer that contains a predicted thermal suitability surface (under a historical or future scenario)
+#' @param area A RasterLayer that defines the area of each grid cell.
+#' @param prediction A RasterLayer that contains a predicted thermal suitability surface (under a historical or future scenario).
 calc_suitable_area <- function(area, prediction, plot = FALSE) {
   # Calculate area grid, weighted by the (non-normalised) predictions
   wta <- area * prediction
@@ -96,7 +96,7 @@ calc_suitable_area <- function(area, prediction, plot = FALSE) {
     a_2 <- round(raster::cellStats(prediction, "sum"))
     # Plot area (unweighted)
     raster::plot(raster::trim(area), main = paste("area", a_1))
-    # Plot prediction (sums to one)
+    # Plot prediction
     raster::plot(raster::trim(prediction), main = paste("prediction", a_2))
     # Plot area (weighted by prediction)
     raster::plot(raster::trim(wta), main = paste("wta", round(out)))
@@ -175,7 +175,7 @@ if (overwrite | !file.exists(file_out)) {
     # ... cells were the species does not occur will remain as NA 
     blank <- sdm
     blank <- raster::setValues(blank, NA)
-    # Compute raster area
+    # Compute raster area (mask = TRUE implemented within raster_area())
     area  <- raster_area(sdm)
     if (FALSE) {
       pp <- par(mfrow = c(1, 2))
@@ -194,7 +194,6 @@ if (overwrite | !file.exists(file_out)) {
     ## Predict abundance from baseline temps
     ab_sst_historical <- predict_abund(x = blank,  sdm = sdm, temperature = sst_historical, 
                                        sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
-    if (FALSE) raster::plot(raster::trim(ab_sst_historical))
     
     ## Predict abundance from mid-century scenarios
     ab_sst_mid_rcp45 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_mid_rcp45, 
@@ -207,7 +206,6 @@ if (overwrite | !file.exists(file_out)) {
                                        sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
     ab_sst_late_rcp85 <- predict_abund(x = blank,  sdm = sdm, temperature = sst_late_rcp85, 
                                        sti = sst_sti, str_sd = sst_str_sd, scale = sst_denom)
-    if (FALSE) raster::plot(raster::trim(ab_sst_late_rcp85))
     
     #### SBT projections 
     
@@ -237,8 +235,13 @@ if (overwrite | !file.exists(file_out)) {
     
     ## Example comparison
     if (FALSE) {
+      # Predictions for two example temperature layers
+      raster::plot(raster::trim(ab_sst_historical))
+      raster::plot(raster::trim(ab_sst_late_rcp85))
+      # Areas at start/end
       (a_start <- calc_suitable_area(area, ab_sst_historical, plot = T))
       (a_end <- calc_suitable_area(area, ab_sst_late_rcp85, plot = T))
+      # % changes
       ((a_start - a_end)/a_start * 100)
       change(area, ab_sst_historical, ab_sst_late_rcp85)
     }
@@ -286,10 +289,10 @@ if (overwrite | !file.exists(file_out)) {
     }) |> data.table::rbindlist()
     
   })
-  
+  # Close cluster
   if (!is.null(cl)) parallel::stopCluster(cl)
   
-  # Tidy data frame 
+  #### Tidy data frame 
   out <- rbindlist(summary_by_species)
   out <- 
     out |> 
@@ -311,7 +314,20 @@ if (overwrite | !file.exists(file_out)) {
     select(species, ncell, temperature, scenario, median, change, remaining, hospitable) |>
     as.data.table()
   
-  # Save outputs 
+  #### Checks
+  # There should be no NAs 
+  apply(out, 2, function(x) {
+    stopifnot(!any(is.na(x)))
+    TRUE
+  })
+  # Selected variables cannot be negative
+  stopifnot(!any(out$ncells <= 0))
+  stopifnot(!any(out$median < 0))
+  stopifnot(!any(out$median > 1))
+  stopifnot(!any(out$remaining < 0))
+  stopifnot(!any(100 - out$hospitable < 0))
+  
+  #### Save outputs 
   beepr::beep(10)
   saveRDS(out, file_out)
   toc()
@@ -345,8 +361,7 @@ utils.add::basic_stats(out$hospitable)
 # Check ncell and median suitability for species predicted to lose 95 % of 'hospitable' habitat
 utils.add::basic_stats(out$ncell[(100 - out$hospitable) < 5])
 utils.add::basic_stats(out$median[(100 - out$hospitable) < 5])
-# There are limited difference between scenarios (on average)
-# ... But order is expected (changes worse under late century, and RCP85)
+# More extreme scenarios produce worse responses
 out |> 
   group_by(temperature, scenario) |> 
   summarise(q = quantile(remaining, 0.05)) |> 
