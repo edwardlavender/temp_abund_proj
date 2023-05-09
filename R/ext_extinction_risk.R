@@ -443,7 +443,6 @@ ggplot(sens) +
 dev.off()
 
 #### Number of species projected to be left with selected amounts of habitat
-# ... for an example selected thermal suitability 'hospitable' threshold
 # Define thresholds
 thresholds <- setNames(c(0, 5, 20), 
                        c("Threshold: 0 %", "Threshold: 5 %", "Threshold: 20 %"))
