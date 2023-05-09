@@ -53,8 +53,10 @@ sbt_mid_rcp85  <- raster::raster("./data/temperature/sbt/mid_century/rcp85/rcp85
 sbt_late_rcp45 <- raster::raster("./data/temperature/sbt/late_century/rcp45/rcp45.asc")
 sbt_late_rcp85 <- raster::raster("./data/temperature/sbt/late_century/rcp85/rcp85.asc")
 
-#### Global parameters
+#### Options
 overwrite <- FALSE
+habitable_thresholds <- unique(c(seq(0, 0.1, by = 0.01), seq(0.1, 0.2, by = 0.05)))
+habitable_cols       <- paste0("h_", habitable_thresholds)
 
 
 ##############################
@@ -127,9 +129,9 @@ hospitable <- function(historical, projection, threshold = 0.05, plot = FALSE) {
     pp <- par(mfrow = c(1, 2))
     on.exit(par(pp), add = TRUE)
     raster::plot(raster::trim(historical), 
-                 main = paste0("H (", historical_hospitable, " km2)"))
+                 main = paste0("H (", round(historical_hospitable), " km2)"))
     raster::plot(raster::trim(projection), 
-                 main = paste0("P (", projection_hospitable, " km2 [", round(change), " %])"))
+                 main = paste0("P (", round(projection_hospitable), " km2 [", round(change), " %])"))
   }
   change
 }
@@ -138,7 +140,7 @@ hospitable <- function(historical, projection, threshold = 0.05, plot = FALSE) {
 ##############################
 #### Generate predictions
 
-file_out <- "./data/extensions/extinction-risk.rds"
+file_out <- "./data/extensions/extinction-risk-2.rds"
 
 if (overwrite | !file.exists(file_out)) {
   
@@ -146,6 +148,7 @@ if (overwrite | !file.exists(file_out)) {
   tic()
   cl <- parallel::makeCluster(10L)
   vl <- c("predict_abund", "raster_area", "calc_suitable_area", "change", "hospitable",
+          "habitable_thresholds", "habitable_cols",
           "sst_historical",
           "sst_mid_rcp45",
           "sst_mid_rcp85",
@@ -159,7 +162,7 @@ if (overwrite | !file.exists(file_out)) {
   parallel::clusterExport(cl = cl, varlist = vl)
   toc()
   
-  ### Loop over each species and make projections (~15 mins)
+  ### Loop over each species and make projections (~15 mins or ~7.5 hr with habitability thresholds)
   tic()
   spptraits$index <- seq_len(nrow(spptraits))
   # spptraits <- spptraits[1:50, ]
@@ -277,13 +280,22 @@ if (overwrite | !file.exists(file_out)) {
         stopifnot(length(est) == 1L)
         stopifnot(length(hos) == 1L)
         # Define dataframe with information
-        data.frame(species = d$spp, 
-                   ncell = ncell,
-                   temperature = temperature, 
-                   scenario = names(projections)[j], 
-                   median = med,
-                   change = est, 
-                   hospitable = hos)
+        info <- data.frame(species = d$spp, 
+                           ncell = ncell,
+                           temperature = temperature, 
+                           scenario = names(projections)[j], 
+                           median = med,
+                           change = est, 
+                           hospitable = hos)
+        # Add 'habitable_cols' columns for different thresholds
+        # ... This section is slow.
+        if (TRUE) {
+          info[, habitable_cols] <- sapply(habitable_thresholds, function(t) {
+            hospitable(baseline, projections[[j]], threshold = t)
+          })
+        }
+        # Return dataframe
+        info
       }) |> data.table::rbindlist()
       
     }) |> data.table::rbindlist()
@@ -311,7 +323,7 @@ if (overwrite | !file.exists(file_out)) {
                                         "RCP 8.5 (late-century)")),
            remaining = 100 - change) |> 
     arrange(species, temperature, scenario) |> 
-    select(species, ncell, temperature, scenario, median, change, remaining, hospitable) |>
+    # select(species, ncell, temperature, scenario, median, change, remaining, hospitable) |>
     as.data.table()
   
   #### Checks
@@ -387,7 +399,51 @@ ggplot(out) +
   ylab("Count")
 dev.off()
 
+#### Sensitivity of % habitat remaining 'hospitable' for different thresholds
+# Reformat dataframe
+sens <- as.data.frame(out)
+sens <- sens[which(sens$temperature == "SBT"), c("species", "scenario", habitable_cols)]
+head(sens)
+sens <- 
+  sens |> 
+  tidyr::pivot_longer(!c(species, scenario),
+                      names_to = "threshold",
+                      values_to = "hospitable")
+sens$threshold <- substr(sens$threshold, 3, nchar(sens$threshold))
+sens$threshold <- as.numeric(as.character(sens$threshold))
+# Define the number of species at 'risk of extinction'
+# ... according to the different area-based thresholds
+# ... for change in hospitable area, with different
+# ... thresholds for 'hospitable' 
+sens <- 
+  lapply(c(80, 95, 100), function(t){
+    sens |> 
+      group_by(scenario, threshold) |> 
+      summarise(count = length(which(hospitable >= t))) |> 
+      mutate(area_threshold = factor(t, 
+                                     levels = c(80, 95, 100), 
+                                     labels = c("Area threshold: 20 %", "Area threshold: 5 %", "Area threshold: 0 %"))
+      )
+  }) |> rbindlist()
+# Visualise predictions
+png("./fig/extensions/habitability-sensitivity.png", 
+    height = 3, width = 8, units = "in", res = 600)
+ggplot(sens) +
+  geom_line(aes(threshold, count, colour = scenario)) + 
+  geom_point(aes(threshold, count, colour = scenario), 
+             size = 1.25) +  
+  scale_colour_viridis_d(option = "viridis") +
+  labs(colour = "Scenario") + 
+  # scale_x_continuous(expand = c(0.1, 0.1)) + 
+  # scale_y_continuous(expand = c(0.1, 0.1)) + 
+  facet_wrap(~area_threshold) + 
+  theme(panel.spacing = unit(2, "lines")) + 
+  xlab("Thermal habitat suitability 'hospitable' threshold") + 
+  ylab("Count") 
+dev.off()
+
 #### Number of species projected to be left with selected amounts of habitat
+# ... for an example selected thermal suitability 'hospitable' threshold
 # Define thresholds
 thresholds <- setNames(c(0, 5, 20), 
                        c("Threshold: 0 %", "Threshold: 5 %", "Threshold: 20 %"))
